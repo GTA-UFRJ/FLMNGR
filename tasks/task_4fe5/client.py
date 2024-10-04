@@ -1,11 +1,9 @@
-from flwr.client import ClientApp, NumPyClient
-
+from flwr.client import NumPyClient, start_client
 from task import DEVICE, Net, get_weights, load_data, set_weights, test, train
 
 # Load model and data (simple CNN, CIFAR-10)
 net = Net().to(DEVICE)
 trainloader, testloader = load_data()
-
 
 # Define FlowerClient and client_fn
 class FlowerClient(NumPyClient):
@@ -19,23 +17,7 @@ class FlowerClient(NumPyClient):
         loss, accuracy = test(net, testloader)
         return loss, len(testloader.dataset), {"accuracy": accuracy}
 
-
-def client_fn(cid: str):
-    """Create and return an instance of Flower `Client`."""
-    return FlowerClient().to_client()
-
-
-# Flower ClientApp
-app = ClientApp(
-    client_fn=client_fn,
+start_client(
+    server_address="127.0.0.1:8080",
+    client=FlowerClient().to_client(),
 )
-
-
-# Legacy mode
-if __name__ == "__main__":
-    from flwr.client import start_client
-
-    start_client(
-        server_address="127.0.0.1:8080",
-        client=FlowerClient().to_client(),
-    )
