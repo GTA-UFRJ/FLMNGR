@@ -12,9 +12,6 @@ from torchvision.transforms import Compose, Normalize, ToTensor
 from tqdm import tqdm
 import torchvision
 
-from flwr.client import ClientApp
-
-
 from pathlib import Path
 
 # #############################################################################
@@ -29,11 +26,8 @@ DATA_PATH = "../data"
 
 
 class RotatedMNIST(torchvision.datasets.MNIST):
-
   def __getitem__(self, i):
-    input, target = super(RotatedMNIST, self).__getitem__(i)
-    #input = torchvision.transforms.RandomRotation(degrees=randint(0,180))(input)
-    return input, target
+      pass
 
 class Net(nn.Module):
     def __init__(self):

@@ -166,3 +166,5 @@ data/RotatedMNIST
 data/CIFAR10
 data/__pycache__/*
 
+flower_tests/certificates/*
+flower_tests/keys/*
