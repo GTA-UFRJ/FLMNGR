@@ -1,1 +1,0 @@
-# Will use cloud_ml, but will interact with RabbitMQ

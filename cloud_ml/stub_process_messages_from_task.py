@@ -1,13 +1,12 @@
 import json
 from utils.task_exceptions import TaskUnknownMessageType
-from utils.udp_task_listener import UdpTaskMessageListener
  
 # will be used by service_cloud_ml for running RPC calls uppon receiving messages
 # for updating task database 
-class ProcessMessagesFromTask:
+class StubForwardMessagesFromTask:
 
-    def __init__(self):
-        self.udp_listener = UdpTaskMessageListener(self.process_message)
+    def __init__(self, task_id:str):
+        self.task_id = task_id
 
     def call_coresponding_func_by_type(self, message:dict):
         message_type = message.get("type")
@@ -28,16 +27,7 @@ class ProcessMessagesFromTask:
             print(f"Error processing message: {e}")
 
     def process_model(self, message):
-        print(f"Sending model message to Rabbit: {message}")
+        print(f"Sending model message from task {self.task_id} to Rabbit: {message}")
 
     def process_info(self, message):
-        print(f"Sending info message to Rabbit: {message}")
-
-    def start_listening(self):
-        self.udp_listener.start()
-
-    def stop_listening(self):
-        self.udp_listener.stop()
-
-    def get_listening_port(self) -> int:
-        return self.udp_listener.port
+        print(f"Sending info message from task {self.task_id} to Rabbit: {message}")

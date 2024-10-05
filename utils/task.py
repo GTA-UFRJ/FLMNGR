@@ -44,6 +44,7 @@ class Task:
             self.running = True
         except PermissionError:
             print(f"Error: Permission denied for '{filename}'.")
+            raise PermissionError(f"Error: Permission denied for '{filename}'.")
 
     def stop_task(self):
         if not self.running:
