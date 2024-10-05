@@ -8,6 +8,9 @@ from flwr.server.strategy import FedAvg
 
 from task import Net, get_weights
 
+#from utils.task_reporter import TaskReporter
+from task_reporter_temp import TaskReporter
+
 # Define metric aggregation function
 def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     examples = [num_examples for num_examples, _ in metrics]
@@ -19,6 +22,9 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     ]
     val_losses = [num_examples * m["val_loss"] for num_examples, m in metrics]
     val_accuracies = [num_examples * m["val_accuracy"] for num_examples, m in metrics]
+
+    task_reporter.send_stats(comm_round,val_accuracies)
+    comm_round += 1
 
     # Aggregate and return custom metric (weighted average)
     return {
@@ -41,6 +47,9 @@ def get_strategy():
     )
 
 if __name__ == "__main__":
+    task_reporter = TaskReporter(int(sys.argv[1]))
+    comm_round = 1
+
     config = ServerConfig(num_rounds=3)
 
     start_server(

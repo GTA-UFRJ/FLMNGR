@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 from task_exceptions import *
+from udp_task_listener import UdpTaskMessageListener
 
 class Task:
 
@@ -20,11 +21,20 @@ class Task:
             raise FileNotFoundError(f"Directory '{task_dir_name}' does not exist.")
         return task_dir_name
     
-    def run_task(self, filename:str, arguments:list[str]):
+    def start_message_listener(self, message_handler):
+        self.message_listener = UdpTaskMessageListener(message_handler)
+        self.message_listener.start()
+
+    def stop_message_listener(self):
+        self.message_listener.stop()
+
+    def run_task(self, filename:str, message_handler, arguments:list[str]):
         if self.running:
             raise TaskAlredyRunning(self.task_id)
         
-        execution_command_list = [sys.executable, filename]
+        self.start_message_listener(message_handler)
+
+        execution_command_list = [sys.executable, filename, str(self.message_listener.port)]
         if arguments:
             execution_command_list.extend(arguments)
 
@@ -43,6 +53,7 @@ class Task:
         print("Terminating process")
         self.process.terminate()
         self.wait_and_force_termination_after_waiting()
+        self.stop_message_listener()
         self.running = False
     
     def wait_and_force_termination_after_waiting(self):
