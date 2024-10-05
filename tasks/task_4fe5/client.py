@@ -1,10 +1,6 @@
 from flwr.client import NumPyClient, start_client
 from task import DEVICE, Net, get_weights, load_data, set_weights, test, train
 
-# Load model and data (simple CNN, CIFAR-10)
-net = Net().to(DEVICE)
-trainloader, testloader = load_data()
-
 # Define FlowerClient and client_fn
 class FlowerClient(NumPyClient):
     def fit(self, parameters, config):
@@ -17,7 +13,11 @@ class FlowerClient(NumPyClient):
         loss, accuracy = test(net, testloader)
         return loss, len(testloader.dataset), {"accuracy": accuracy}
 
-start_client(
-    server_address="127.0.0.1:8080",
-    client=FlowerClient().to_client(),
-)
+if __name__ == "__main__":
+    net = Net().to(DEVICE)
+    trainloader, testloader = load_data()
+
+    start_client(
+        server_address="127.0.0.1:8080",
+        client=FlowerClient().to_client(),
+    )

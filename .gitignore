@@ -161,10 +161,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-data/MNIST
-data/RotatedMNIST
-data/CIFAR10
-data/__pycache__/*
+data/*
 
 flower_tests/certificates/*
 flower_tests/keys/*

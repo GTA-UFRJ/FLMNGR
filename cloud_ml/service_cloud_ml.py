@@ -1,4 +1,1 @@
-
-class ServiceCloudML:
-    def __init__(self) -> None:
-        pass
+# Will use cloud_ml, but will interact with RabbitMQ
