@@ -27,7 +27,7 @@ class ServerSideTask(Task):
         self.stop_task()
 
 def message_handler(message: bytes):
-    print(message)
+    print("Handled message: ",message)
 
 if __name__ == "__main__":
     server_task = ServerSideTask(str(Path().resolve()), "4fe5", message_handler)

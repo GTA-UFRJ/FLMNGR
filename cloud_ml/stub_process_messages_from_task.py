@@ -14,6 +14,8 @@ class StubForwardMessagesFromTask:
             self.process_model(message)
         elif message_type == "info":
             self.process_info(message)
+        elif message_type == "print":
+            self.process_print(message)
         else:
             raise TaskUnknownMessageType()
 
@@ -31,3 +33,9 @@ class StubForwardMessagesFromTask:
 
     def process_info(self, message):
         print(f"Sending info message from task {self.task_id} to Rabbit: {message}")
+
+    def process_model(self, message):
+        print(f"Sending model message from task {self.task_id} to Rabbit: {message}")
+
+    def process_print(self, message):
+        print("P ", message["message"])

@@ -69,7 +69,7 @@ class TestCloudMLLogic:
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_stop_server_task({"task_id":"4fe5"}))
         try: 
-            assert ret == {"status_code":500,"exception":"Task with ID=aaaa not found"}
+            assert ret == {"status_code":500,"exception":"Task with ID=4fe5 not found"}
         except:
             print("Test (5) failed: ", ret)
             exit()
