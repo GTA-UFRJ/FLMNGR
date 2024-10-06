@@ -18,11 +18,13 @@ class ClientSideTask(Task):
         return client_file_name
 
     def run_task_client(self):
-        self.run_task(self.client_main_file_name, self.message_handler, self.arguments)
+        self.run_task(
+            self.client_main_file_name, 
+            self.message_handler, 
+            self.arguments)
 
     def stop_task_client(self):
         self.stop_task()
-
 
 def message_handler(message: bytes):
     print(message)
