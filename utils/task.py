@@ -7,16 +7,17 @@ from utils.udp_task_listener import UdpTaskMessageListener
 class Task:
 
     def __init__(self, work_path: str, task_id: str) -> None:
+        self.work_path = work_path
         self.task_id = task_id
-        self.task_dir_name = self.get_task_directory_name(work_path, task_id)
+        self.task_dir_name = self.get_task_directory_name(task_id)
         self.forced_termination_timeout = 5
         self.running = False
 
     def get_task_id(self) -> str:
         return self.task_id
 
-    def get_task_directory_name(self, work_path:str, task_id:str):
-        task_dir_name = os.path.join(work_path, f"task_{task_id}")
+    def get_task_directory_name(self, task_id:str):
+        task_dir_name = os.path.join(self.work_path, f"tasks/task_{task_id}")
         if not os.path.isdir(task_dir_name):
             raise FileNotFoundError(f"Directory '{task_dir_name}' does not exist.")
         return task_dir_name
@@ -34,7 +35,10 @@ class Task:
         
         self.start_message_listener(message_handler)
 
-        execution_command_list = [sys.executable, filename, str(self.message_listener.port)]
+        execution_command_list = [sys.executable, 
+                                  filename, 
+                                  str(self.message_listener.port),
+                                  self.work_path]
         if arguments:
             execution_command_list.extend(arguments)
 

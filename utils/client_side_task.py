@@ -1,6 +1,7 @@
 from utils.task import Task
 import os
 from time import sleep
+from pathlib import Path
 
 class ClientSideTask(Task):
 
@@ -27,7 +28,7 @@ def message_handler(message: bytes):
     print(message)
 
 if __name__ == "__main__":
-    client_task = ClientSideTask("/home/guiaraujo/FLMNGR/tasks", "4fe5", message_handler)
+    client_task = ClientSideTask(str(Path().resolve()), "4fe5", message_handler)
     client_task.run_task_client()
     try:
         while True:

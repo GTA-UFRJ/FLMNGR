@@ -1,6 +1,7 @@
 from utils.task import Task
 import os
 from time import sleep
+from pathlib import Path
 
 class ServerSideTask(Task):
 
@@ -17,7 +18,10 @@ class ServerSideTask(Task):
         return server_file_name
 
     def run_task_server(self):
-        self.run_task(self.server_main_file_name, self.message_handler, self.arguments)
+        self.run_task(
+            self.server_main_file_name, 
+            self.message_handler, 
+            self.arguments)
 
     def stop_task_server(self):
         self.stop_task()
@@ -26,7 +30,7 @@ def message_handler(message: bytes):
     print(message)
 
 if __name__ == "__main__":
-    server_task = ServerSideTask("/home/guiaraujo/FLMNGR/tasks", "4fe5", message_handler)
+    server_task = ServerSideTask(str(Path().resolve()), "4fe5", message_handler)
     server_task.run_task_server()
     try:
         while True:

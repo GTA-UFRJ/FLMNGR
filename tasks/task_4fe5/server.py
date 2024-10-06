@@ -1,4 +1,8 @@
 import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+if sys.argv[1] != "cli":
+    sys.path.append(sys.argv[2])
 
 from typing import List, Tuple
 
@@ -8,8 +12,8 @@ from flwr.server.strategy import FedAvg
 
 from task import Net, get_weights
 
-#from utils.task_reporter import TaskReporter
-from task_reporter_temp import TaskReporter
+from utils.task_reporter import TaskReporter
+#from task_reporter_temp import TaskReporter
 
 # Define metric aggregation function
 def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
@@ -47,7 +51,10 @@ def get_strategy():
     )
 
 if __name__ == "__main__":
-    task_reporter = TaskReporter(int(sys.argv[1]))
+
+    if sys.argv[1] != "cli":
+        task_reporter = TaskReporter(int(sys.argv[1]))
+
     comm_round = 1
 
     config = ServerConfig(num_rounds=3)

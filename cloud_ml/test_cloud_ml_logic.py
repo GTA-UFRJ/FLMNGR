@@ -1,10 +1,11 @@
 from cloud_ml.stub_service_cloud_ml import StubServiceCloudML
 from time import sleep
+from pathlib import Path
 
 class TestCloudMLLogic:
 
-    def __init__(self) -> None:
-        self.service_cloud_ml = StubServiceCloudML("/home/guiaraujo/FLMNGR/tasks")
+    def __init__(self, base_path) -> None:
+        self.service_cloud_ml = StubServiceCloudML(base_path)
 
     # Must be part of BaseService
     def get_success_message(self, returned_data=None):
@@ -92,5 +93,5 @@ class TestCloudMLLogic:
         sleep(1)
         
 if __name__ == "__main__":
-    tester = TestCloudMLLogic()
+    tester = TestCloudMLLogic(str(Path().resolve()))
     tester.perform_tests()

@@ -1,5 +1,12 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+if sys.argv[1] != "cli":
+    sys.path.append(sys.argv[2])
+
 from flwr.client import NumPyClient, start_client
 from task import DEVICE, Net, get_weights, load_data, set_weights, test, train
+from utils.task_reporter import TaskReporter
 
 # Define FlowerClient and client_fn
 class FlowerClient(NumPyClient):
@@ -14,6 +21,10 @@ class FlowerClient(NumPyClient):
         return loss, len(testloader.dataset), {"accuracy": accuracy}
 
 if __name__ == "__main__":
+
+    if sys.argv[1] != "cli":
+        task_reporter = TaskReporter(int(sys.argv[1]))
+
     net = Net().to(DEVICE)
     trainloader, testloader = load_data()
 
