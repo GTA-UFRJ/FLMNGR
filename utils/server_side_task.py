@@ -1,4 +1,4 @@
-from task import Task
+from utils.task import Task
 import os
 from time import sleep
 

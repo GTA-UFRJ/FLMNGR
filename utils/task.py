@@ -1,8 +1,8 @@
 import os
 import subprocess
 import sys
-from task_exceptions import *
-from udp_task_listener import UdpTaskMessageListener
+from utils.task_exceptions import *
+from utils.udp_task_listener import UdpTaskMessageListener
 
 class Task:
 

@@ -14,11 +14,11 @@ class CloudML:
         self.task_id_to_task_object_map[task_id] = server_side_task_object
 
     def get_task_from_map(self, task_id:str):
-        if task_id in self.task_id_to_task_object_map:
+        if task_id not in self.task_id_to_task_object_map:
             raise TaskIdNotFound(task_id)
         return self.task_id_to_task_object_map[task_id]
 
-    def start_new_task(self, task_id:str, message_handler:function, arguments:str): 
+    def start_new_task(self, task_id:str, message_handler, arguments:str): 
         server_side_task_object = ServerSideTask(
             self.work_path, 
             task_id,

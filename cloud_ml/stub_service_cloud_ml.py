@@ -10,7 +10,7 @@ class StubServiceCloudML:
         
         self.cloud_ml_backend = CloudML(workpath)
 
-    def rpc_exec_start_server_task(self, received:dict) -> dict:
+    def rpc_exec_start_server_task(self, received:dict):
         forwarder = StubForwardMessagesFromTask(received['task_id'])
 
         self.cloud_ml_backend.start_new_task(
@@ -19,5 +19,5 @@ class StubServiceCloudML:
             received.get('arguments')
         )
 
-    def rpc_exec_stop_server_task(self, received:dict) -> dict:
+    def rpc_exec_stop_server_task(self, received:dict):
         self.cloud_ml_backend.stop_task(received['task_id'])
