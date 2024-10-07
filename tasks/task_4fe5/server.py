@@ -60,6 +60,10 @@ if __name__ == "__main__":
     config = ServerConfig(num_rounds=3)
 
     try:
+        if len(sys.argv) >= 3:
+            if sys.argv[2] == "test-error":
+                raise Exception
+
         start_server(
             server_address="0.0.0.0:8080",
             config=config,

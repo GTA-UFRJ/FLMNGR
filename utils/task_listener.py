@@ -11,7 +11,10 @@ class TaskMessageListener:
 
     def process_received_message(self, data:bytes):
         if data:
-            self.handler(data)
+            try:
+                self.handler(data)
+            except Exception as e:
+                print("Task listener could not handle data. Let it go.")
         
     def listen(self):
         while not self.exit_loop:
@@ -33,4 +36,7 @@ class TaskMessageListener:
     def stop(self):
         self.exit_loop = True
         if self.thread:
-            self.thread.join(timeout=1)
+            try:
+                self.thread.join()
+            except RuntimeError:
+                print("Listener finished itself")

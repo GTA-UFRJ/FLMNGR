@@ -13,8 +13,13 @@ class StubServiceCloudML:
     def finish_cloud_ml(self):
         self.cloud_ml_backend.finish_all()
 
+    def handle_error_from_task(self, task_id:str):
+        self.cloud_ml_backend.stop_task(task_id)
+
     def rpc_exec_start_server_task(self, received:dict):
-        forwarder = StubForwardMessagesFromTask(received['task_id'])
+        forwarder = StubForwardMessagesFromTask(
+            received['task_id'],
+            self.handle_error_from_task)
         callback = forwarder.process_messages
 
         self.cloud_ml_backend.start_new_task(

@@ -64,25 +64,48 @@ class TestCloudMLLogic:
             print("Test (4) failed: ", ret)
             exit()
 
+    def start_bugged_task(self):
+        print("(5) Start task with a bug")
+        ret = self.call_function(
+            lambda: self.service_cloud_ml.rpc_exec_start_server_task(
+                {"task_id":"4fe5",
+                 "arguments":"test-error"}))
+        try: 
+            assert ret == {"status_code":200, "return":None}
+        except:
+            print("Test (5.1) failed: ", ret)
+            exit()
+
+        sleep(6)
+        print("I will try to kill the task which should be alredy stopped")
+
+        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_stop_server_task({"task_id":"4fe5"}))
+        try:
+            assert ret == {"status_code":500,"exception":"Task with ID=4fe5 not found"}
+        except:
+            print("Test (5.2) failed: ", ret)
+            exit()
+
+
     def stop_task_alredy_finished(self):
-        print("(5) Stop task alredy finished")
+        print("(6) Stop task alredy finished")
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_stop_server_task({"task_id":"4fe5"}))
         try: 
             assert ret == {"status_code":500,"exception":"Task with ID=4fe5 not found"}
         except:
-            print("Test (5) failed: ", ret)
+            print("Test (6) failed: ", ret)
             exit()
 
     def restart_task_correctly(self):
-        print("(6) Restart task using start function")
+        print("(7) Restart task using start function")
         
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_start_server_task({"task_id":"4fe5"}))
         try: 
             assert ret == {'status_code': 200, 'return': None}
         except:
-            print("Test (6) failed: ", ret)
+            print("Test (7) failed: ", ret)
             exit()
         
         sleep(4)
@@ -91,7 +114,7 @@ class TestCloudMLLogic:
         try: 
             assert ret == {"status_code":200, "return":None}
         except:
-            print("Test (6) failed: ", ret)
+            print("Test (7) failed: ", ret)
             exit()
 
     def perform_tests(self):
@@ -102,6 +125,8 @@ class TestCloudMLLogic:
         self.start_task_correctly()
         sleep(6)
         self.stop_task_correctly()
+        sleep(4)
+        self.start_bugged_task()
         sleep(4)
         self.stop_task_alredy_finished()
         sleep(1)
