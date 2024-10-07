@@ -107,7 +107,13 @@ class TestCloudMLLogic:
         sleep(1)
         self.restart_task_correctly()
         sleep(1)
+    
+    def finish_tests(self):
+        self.service_cloud_ml.finish_cloud_ml()
         
 if __name__ == "__main__":
     tester = TestCloudMLLogic(str(Path().resolve()))
-    tester.perform_tests()
+    try:
+        tester.perform_tests()
+    except:
+        tester.finish_tests()

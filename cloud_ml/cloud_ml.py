@@ -32,3 +32,8 @@ class CloudML:
         #server_side_task_object = self.get_task_from_map(task_id)
         server_side_task_object = self.remove_task_from_map(task_id)
         server_side_task_object.stop_task_server()
+
+    def finish_all(self):
+        print("Abort all tasks!")
+        for task_id, server_side_task_object in self.task_id_to_task_object_map.items():
+            server_side_task_object.stop_task_server()

@@ -27,7 +27,7 @@ class ClientSideTask(Task):
         self.stop_task()
 
 def message_handler(message: bytes):
-    print(message)
+    print("Received by handler: ", message.decode("utf8").strip())
 
 if __name__ == "__main__":
     client_task = ClientSideTask(str(Path().resolve()), "4fe5", message_handler)
@@ -36,5 +36,5 @@ if __name__ == "__main__":
         while True:
             pass
     except KeyboardInterrupt:
-        client_task.stop_task_server()
+        client_task.stop_task_client()
     

@@ -5,7 +5,7 @@ from sys import stdout, stderr
 class TaskReporter:
 
     def __init__(self): 
-        pass
+        self.send_info("Started")
 
     def send_stats(self, task_round:int, acc:int):
         message = {

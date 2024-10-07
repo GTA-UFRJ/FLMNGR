@@ -54,7 +54,6 @@ if __name__ == "__main__":
 
     if sys.argv[1] != "cli":
         task_reporter = TaskReporter()
-        task_reporter.send_info("Started task")
 
     comm_round = 1
 

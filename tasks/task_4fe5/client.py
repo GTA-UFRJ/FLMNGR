@@ -28,7 +28,10 @@ if __name__ == "__main__":
     net = Net().to(DEVICE)
     trainloader, testloader = load_data()
 
-    start_client(
-        server_address="127.0.0.1:8080",
-        client=FlowerClient().to_client(),
-    )
+    try:
+        start_client(
+            server_address="127.0.0.1:8080",
+            client=FlowerClient().to_client(),
+        )
+    except Exception as e:
+        task_reporter.send_error(e)
