@@ -12,10 +12,11 @@ class StubServiceCloudML:
 
     def rpc_exec_start_server_task(self, received:dict):
         forwarder = StubForwardMessagesFromTask(received['task_id'])
+        callback = forwarder.process_messages
 
         self.cloud_ml_backend.start_new_task(
             received['task_id'],
-            forwarder.process_message,
+            callback,
             received.get('arguments')
         )
 

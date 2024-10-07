@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 if sys.argv[1] != "cli":
-    sys.path.append(sys.argv[2])
+    sys.path.append(sys.argv[1])
 
 from typing import List, Tuple
 
@@ -53,14 +53,18 @@ def get_strategy():
 if __name__ == "__main__":
 
     if sys.argv[1] != "cli":
-        task_reporter = TaskReporter(int(sys.argv[1]))
+        task_reporter = TaskReporter()
+        task_reporter.send_info("Started task")
 
     comm_round = 1
 
     config = ServerConfig(num_rounds=3)
 
-    start_server(
-        server_address="0.0.0.0:8080",
-        config=config,
-        strategy=get_strategy(),
-    )
+    try:
+        start_server(
+            server_address="0.0.0.0:8080",
+            config=config,
+            strategy=get_strategy(),
+        )
+    except Exception as e:
+        task_reporter.send_error(e)

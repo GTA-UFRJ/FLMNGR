@@ -19,15 +19,16 @@ class StubForwardMessagesFromTask:
         else:
             raise TaskUnknownMessageType()
 
-    def process_message(self, packet:bytes):
+    def process_messages(self, message:bytes):
         try:
-            message = json.loads(packet.decode('utf-8'))  # Convert bytes to JSON dictionary
-            self.call_coresponding_func_by_type(message)
+            message = json.loads(message.decode("utf8")) 
+            self.call_coresponding_func_by_type(message)   
+        except UnicodeDecodeError:
+            pass
         except json.JSONDecodeError:
-            print("Received invalid JSON data")
-        except Exception as e:
-            print(f"Error processing message: {e}")
-
+            # Replace by a log 
+            print(f"[{self.task_id}] {message.decode("utf8").strip()}")
+    
     def process_model(self, message):
         print(f"Sending model message from task {self.task_id} to Rabbit: {message}")
 

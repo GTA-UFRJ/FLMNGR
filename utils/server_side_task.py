@@ -20,14 +20,14 @@ class ServerSideTask(Task):
     def run_task_server(self):
         self.run_task(
             self.server_main_file_name, 
-            self.message_handler, 
+            self.message_handler,
             self.arguments)
 
     def stop_task_server(self):
         self.stop_task()
 
 def message_handler(message: bytes):
-    print("Handled message: ",message)
+    print("Received by handler: ", message.decode("utf8").strip())
 
 if __name__ == "__main__":
     server_task = ServerSideTask(str(Path().resolve()), "4fe5", message_handler)

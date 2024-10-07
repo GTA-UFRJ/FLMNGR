@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 from utils.task_exceptions import *
-from utils.udp_task_listener import UdpTaskMessageListener
+from utils.task_listener import TaskMessageListener
 
 class Task:
 
@@ -23,7 +23,7 @@ class Task:
         return task_dir_name
     
     def start_message_listener(self, message_handler):
-        self.message_listener = UdpTaskMessageListener(message_handler)
+        self.message_listener = TaskMessageListener(message_handler, self.process)
         self.message_listener.start()
 
     def stop_message_listener(self):
@@ -32,18 +32,16 @@ class Task:
     def run_task(self, filename:str, message_handler, arguments:list[str]):
         if self.running:
             raise TaskAlredyRunning(self.task_id)
-        
-        self.start_message_listener(message_handler)
 
         execution_command_list = [sys.executable, 
                                   filename, 
-                                  str(self.message_listener.port),
                                   self.work_path]
         if arguments:
             execution_command_list.extend(arguments)
 
         try:
-            self.process = subprocess.Popen(execution_command_list)
+            self.process = subprocess.Popen(execution_command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.start_message_listener(message_handler)
             print(f"Started {self.process}")
             self.running = True
         except PermissionError:
