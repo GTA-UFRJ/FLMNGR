@@ -1,0 +1,20 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://example.com/product.schema.json",
+  	"title": "Product",
+  	"description": "A product in the catalog",
+	"type": "object",
+	"properties":{
+		"date":{
+			"type":"string"
+		},
+		"number":{
+			"type":"integer"
+		},
+		"parameters":{
+			"type":"object"
+		}
+	}
+
+
+}
