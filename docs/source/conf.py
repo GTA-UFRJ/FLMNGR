@@ -19,8 +19,10 @@ print(sys.path)
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'myst_parser',
-    'sphinx.ext.autodoc'
+    'myst_parser',             # Parse Markdown with extra features: https://myst-parser.readthedocs.io/en/latest/index.html
+    'sphinx.ext.autodoc', 
+    'sphinx-jsonschema',       # Auto import of JSON schemas: https://github.com/lnoor/sphinx-jsonschema
+    'sphinxcontrib.httpdomain' # Writing HTTP API docs: https://sphinxcontrib-httpdomain.readthedocs.io/en/stable/
 ]
 
 source_suffix = {
@@ -38,7 +40,6 @@ myst_enable_extensions = [
     "fieldlist",
     "html_admonition",
     "html_image",
-    "linkify",
     "replacements",
     "smartquotes",
     "strikethrough",
