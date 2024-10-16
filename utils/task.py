@@ -5,7 +5,9 @@ from utils.task_exceptions import *
 from utils.task_listener import TaskMessageListener
 
 class Task:
-
+    """
+    Class for task
+    """
     def __init__(self, work_path: str, task_id: str) -> None:
         self.work_path = work_path
         self.task_id = task_id
