@@ -69,3 +69,11 @@ and finished.
 ```
 python3 -m cloud_ml.test_cloud_ml_logic
 ```
+
+### Documentation 
+
+```
+cd docs
+sphinx-build -M html source build
+make html
+```
