@@ -3,8 +3,8 @@
 if [[ -n $(command -v conda) ]]; then 
 	if [[ -z $(conda env list | grep flmngr) ]]; then 
 		conda create -n flmngr
+		conda activate flmngr
+		pip install -r requirements.txt
 	fi
-	conda init
 	conda activate flmngr
-	pip install -r requirements.txt
 fi
