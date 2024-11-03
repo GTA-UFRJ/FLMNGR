@@ -1,5 +1,5 @@
-from cloud_ml.cloud_ml import CloudML
-from cloud_ml.stub_process_messages_from_task import StubForwardMessagesFromTask
+from cloud_ml import CloudML
+from stub_process_messages_from_task import StubForwardMessagesFromTask
 
 # The definitive ServiceCloudMl use cloud_ml, but will interact with RabbitMQ
 class StubServiceCloudML:

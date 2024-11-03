@@ -1,6 +1,9 @@
-from cloud_ml.stub_service_cloud_ml import StubServiceCloudML
+from stub_service_cloud_ml import StubServiceCloudML
 from time import sleep
 from pathlib import Path
+import os 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+print(f"Current dir: {dir_path}")
 
 class TestCloudMLLogic:
 
@@ -39,7 +42,7 @@ class TestCloudMLLogic:
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_start_server_task({"task_id":"aaaa"}))
         try:
-            assert ret == {"status_code":500,"exception":f"Directory '/home/guiaraujo/FLMNGR/tasks/task_aaaa' does not exist."} 
+            assert ret == {"status_code":500,"exception":f"Directory '{dir_path}/tasks/task_aaaa' does not exist."} 
         except:
             print("Test (2) failed: ", ret)
             exit()

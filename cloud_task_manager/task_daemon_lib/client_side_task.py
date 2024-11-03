@@ -1,4 +1,4 @@
-from utils.task import Task
+from task_daemon_lib.task import Task
 import os
 from time import sleep
 from pathlib import Path

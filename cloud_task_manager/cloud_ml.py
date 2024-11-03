@@ -1,5 +1,5 @@
-from utils.server_side_task import ServerSideTask
-from utils.task_exceptions import *
+from task_daemon_lib.server_side_task import ServerSideTask
+from task_daemon_lib.task_exceptions import *
 
 # Start and stop multiple server-side tasks
 class CloudML:

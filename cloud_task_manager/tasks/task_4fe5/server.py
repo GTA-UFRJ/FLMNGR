@@ -12,7 +12,7 @@ from flwr.server.strategy import FedAvg
 
 from task import Net, get_weights
 
-from utils.task_reporter import TaskReporter
+from task_daemon_lib.task_reporter import TaskReporter
 #from task_reporter_temp import TaskReporter
 
 # Define metric aggregation function

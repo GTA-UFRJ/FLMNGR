@@ -1,8 +1,8 @@
 import os
 import subprocess
 import sys
-from utils.task_exceptions import *
-from utils.task_listener import TaskMessageListener
+from task_daemon_lib.task_exceptions import *
+from task_daemon_lib.task_listener import TaskMessageListener
 from typing import Callable
 
 class Task:

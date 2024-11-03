@@ -9,8 +9,8 @@ import sys
 import os
 
 project = 'FLMNGR'
-copyright = '2024, Guilherme Araújo, Lucas Airam, Fernando Dias'
-author = 'Guilherme Araújo, Lucas Airam, Fernando Dias'
+copyright = '2024, Guilherme Araujo, Lucas Airam, Fernando Dias'
+author = 'Guilherme Araujo, Lucas Airam, Fernando Dias'
 release = 'v0.1'
 
 sys.path.insert(0,os.path.abspath('../..'))

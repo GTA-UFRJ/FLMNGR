@@ -1,5 +1,5 @@
 import json
-from utils.task_exceptions import TaskUnknownMessageType
+from task_daemon_lib.task_exceptions import TaskUnknownMessageType
  
 # will be used by service_cloud_ml for running RPC calls uppon receiving messages
 # for updating task database 

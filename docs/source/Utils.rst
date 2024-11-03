@@ -1,7 +1,7 @@
-Utils
+Flower Tasks Daemon Library (FTDL)
 ========
 
 This module contains utility functions for the project.
 
-.. automodule:: utils.task
+.. automodule:: cloud_task_manager.task_daemon_lib.task
    :members:
