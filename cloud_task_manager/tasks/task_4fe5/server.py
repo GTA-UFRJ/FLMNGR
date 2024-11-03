@@ -7,7 +7,7 @@ if sys.argv[1] != "cli":
 from typing import List, Tuple
 
 from flwr.common import Metrics, ndarrays_to_parameters
-from flwr.server import ServerApp, ServerConfig, start_server
+from flwr.server import ServerConfig, start_server
 from flwr.server.strategy import FedAvg
 
 from task import Net, get_weights
