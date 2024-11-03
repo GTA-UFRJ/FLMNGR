@@ -27,5 +27,4 @@ pip install -r requirements.txt
 ```
 cd docs
 sphinx-build -M html source build
-make html
 ```

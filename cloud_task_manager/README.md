@@ -27,9 +27,7 @@ python -m tasks.task_4fe5.client cli
 
 This is a library for starting a Flower task as a child process. It also receives information from this task for logging and for finishing the task.
 
-The task initializers uppon execution, create a Flower child process that reports
-message to the task initializer using a UDP socket (client is the task reporter
-and server is the task listener).
+The task initializers uppon execution, create a Flower child process that reports message to the task initializer using a UDP socket (client is the task reporter and server is the task listener).
 
 Here are the commands to run the server in one terminal, followed by
 two clients in other terminals:
@@ -47,8 +45,8 @@ python -m task_daemon_lib.client_side_task
 
 ### Test Cloud Task Manager service
 
-Cloud Task Manager is a component that receives messages through a RabbitMQ broker
-for RPC function execution. This broker logic is not yet implemented. 
+Cloud Task Manager is a component that receives messages through a RabbitMQ
+broker for RPC function execution. This broker logic is not yet implemented. 
 The responsability of this service is to manage server  tasks being started
 and finished. 
 

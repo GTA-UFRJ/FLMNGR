@@ -13,7 +13,7 @@ copyright = '2024, Guilherme Araujo, Lucas Airam, Fernando Dias'
 author = 'Guilherme Araujo, Lucas Airam, Fernando Dias'
 release = 'v0.1'
 
-sys.path.insert(0,os.path.abspath('../..'))
+sys.path.insert(0,os.path.abspath('../../cloud_task_manager'))
 print(sys.path)
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
