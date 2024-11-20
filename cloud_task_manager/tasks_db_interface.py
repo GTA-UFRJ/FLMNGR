@@ -2,6 +2,7 @@ import os
 import sqlite3
 from pathlib import Path
 from datetime import datetime
+from pprint import pprint
 
 class TasksDbInterface:
 
@@ -131,6 +132,141 @@ class TasksDbInterface:
         self.connection.commit()
         print(f"Task {task_id} is now set to running.")
 
+    def _select_from_tasks_table(self, task_id:str) -> list:
+        self.cursor.execute("""
+            SELECT 
+                creation_date, 
+                last_mod_date, 
+                ID, 
+                host, 
+                port, 
+                running, 
+                selection_criteria 
+            FROM tasks
+            WHERE ID = ?;
+        """, (task_id,))
+        return self.cursor.fetchone()
+    
+    def _select_from_tags_table(self, task_id:str) -> list[str]:
+        self.cursor.execute("""
+            SELECT tag
+            FROM tags
+            WHERE task_id = ?;
+        """, (task_id,))
+        return [row[0] for row in self.cursor.fetchall()]
+
+    def query_task(self, task_id:str)->dict:
+        """
+        Query a task by its ID, including all associated attributes and tags.
+        
+        :param task_id: The ID of the task to query.
+        :type task_id: str
+        
+        :return: A dictionary with task details and associated tags, or None if the task does not exist.
+        :rtype: dict
+
+        :raises: sqlite3.Error
+        """    
+        task = self._select_from_tasks_table(task_id)
+        if not task:
+            print(f"No task found with ID: {task_id}")
+            return None
+            
+        tags = self._select_from_tags_table(task_id)
+        
+        return {
+            "creation_date": task[0],
+            "last_mod_date": task[1],
+            "ID": task[2],
+            "host": task[3],
+            "port": task[4],
+            "running": task[5],
+            "selection_criteria": task[6],
+            "tags": tags
+        }
+
+    def get_task_selection_criteria_map(self)->dict:
+        """
+        Retrieve a dictionary mapping each task ID to its selection criteria.
+        
+        :return: A dictionary where keys are task IDs and values are selection criteria.
+        :rtype: dict
+        """
+
+        self.cursor.execute("""
+            SELECT ID, selection_criteria
+            FROM tasks;
+        """)
+        rows = self.cursor.fetchall()
+        
+        task_map = {row[0]: row[1] for row in rows}
+        return task_map
+
+    def update_task(self, task_id:str, host:str=None, port:int=None, running:bool=None, selection_criteria:str=None):
+        """
+        Update an existing task with new values. Arguments with None are not updated.
+        Not used yet
+
+        :param task_id: The ID of the task to update
+        :type task_id: str
+
+        :param host: New hostname or IP address (optional)
+        :type host: str
+
+        :param port: New port number (optional)
+        :type port: int
+
+        :param running: New running status (optional)
+        :type running: bool
+
+        :param selection_criteria: New selection criteria (optional)
+        :type selection_criteria: str
+
+        :raises: sqlite3.Error
+        """
+        if not task_id:
+            print("Task ID is required to update a task.")
+            return
+        
+        # Build the SQL update query dynamically based on non-None arguments
+        fields = []
+        values = []
+        last_mod_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        if host is not None:
+            fields.append("host = ?")
+            values.append(host)
+        
+        if port is not None:
+            fields.append("port = ?")
+            values.append(port)
+        
+        if running is not None:
+            fields.append("running = ?")
+            values.append(running)
+        
+        if selection_criteria is not None:
+            fields.append("selection_criteria = ?")
+            values.append(selection_criteria)
+        
+        # Always update the last modification date
+        fields.append("last_mod_date = ?")
+        values.append(last_mod_date)
+        
+        # Add the ID for the WHERE clause
+        values.append(task_id)
+        
+        # Construct the final SQL query
+        sql_query = f"""
+            UPDATE tasks
+            SET {', '.join(fields)}
+            WHERE ID = ?;
+        """
+        
+        self.cursor.execute(sql_query, values)
+        self.connection.commit()
+        print(f"Task {task_id} updated successfully.")
+
     def close(self):
         """
         Close the database connection
@@ -140,12 +276,9 @@ class TasksDbInterface:
 
 if __name__ == "__main__":
     db_interface = TasksDbInterface(str(Path().resolve()))
-    db_interface.insert_task(
-        task_id="2a2b",
-        host="192.168.1.1",
-        port=8080,
-        selection_criteria="priority",
-        tags=["mnist"]
-    )
-    db_interface.set_task_running("2a2b")
+    db_interface.insert_task(task_id="1a2b", host="192.168.1.1", port=8080, selection_criteria="(has camera) and (data >= 30)", tags=['mnist','mlp'])
+    db_interface.insert_task(task_id="2b3c", host="192.168.1.2", port=9090)
+    db_interface.set_task_running("1a2b")
+    task_map = db_interface.get_task_selection_criteria_map()
+    pprint(task_map)
     db_interface.close()
