@@ -75,7 +75,7 @@ class CloudML:
             arguments_list = None
         else:
             arguments_list = arguments.split(" ")
-        
+
         server_side_task_object = ServerSideTask(
             self.work_path, 
             task_id,

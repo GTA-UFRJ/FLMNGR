@@ -64,7 +64,7 @@ class StubServiceCloudML:
         self.cloud_ml_backend.start_new_task(
             received['task_id'],
             callback,
-            received['arguments']
+            received.get('arguments')
         )
 
     def rpc_exec_stop_server_task(self, received:dict):

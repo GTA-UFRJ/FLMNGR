@@ -5,7 +5,12 @@ from datetime import datetime
 from pprint import pprint
 
 class TasksDbInterface:
+    """
+    Tasks DB handler
 
+    :param workpath: project location, within which "tasks" dir resides
+    :type workpath: str
+    """
     def __init__(self, work_path: str):
         self.db_path = os.path.join(work_path,"db/tasks.db")
         
