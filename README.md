@@ -27,4 +27,5 @@ pip install -r requirements.txt
 ```
 cd docs
 sphinx-build -M html source build
+python3 -m http.server -d build/html
 ```

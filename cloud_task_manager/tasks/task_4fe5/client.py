@@ -34,4 +34,6 @@ if __name__ == "__main__":
             client=FlowerClient().to_client(),
         )
     except Exception as e:
+        if sys.argv[1] == "cli":
+            raise e
         task_reporter.send_error(e)
