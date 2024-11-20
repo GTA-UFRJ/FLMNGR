@@ -7,16 +7,17 @@ if sys.argv[1] != "cli":
 from typing import List, Tuple
 
 from flwr.common import Metrics, ndarrays_to_parameters
-from flwr.server import ServerApp, ServerConfig, start_server
+from flwr.server import ServerConfig, start_server
 from flwr.server.strategy import FedAvg
 
 from task import Net, get_weights
 
-from utils.task_reporter import TaskReporter
+from task_daemon_lib.task_reporter import TaskReporter
 #from task_reporter_temp import TaskReporter
 
 # Define metric aggregation function
 def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
+    global task_reporter, comm_round
     examples = [num_examples for num_examples, _ in metrics]
 
     # Multiply accuracy of each client by number of examples used
@@ -27,7 +28,8 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     val_losses = [num_examples * m["val_loss"] for num_examples, m in metrics]
     val_accuracies = [num_examples * m["val_accuracy"] for num_examples, m in metrics]
 
-    task_reporter.send_stats(comm_round,val_accuracies)
+    if sys.argv[1] != "cli":
+        task_reporter.send_stats(comm_round,val_accuracies)
     comm_round += 1
 
     # Aggregate and return custom metric (weighted average)
@@ -70,4 +72,6 @@ if __name__ == "__main__":
             strategy=get_strategy(),
         )
     except Exception as e:
+        if sys.argv[1] == "cli":
+            raise e
         task_reporter.send_error(e)

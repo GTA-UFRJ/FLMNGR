@@ -6,7 +6,7 @@ if sys.argv[1] != "cli":
 
 from flwr.client import NumPyClient, start_client
 from task import DEVICE, Net, get_weights, load_data, set_weights, test, train
-from utils.task_reporter import TaskReporter
+from task_daemon_lib.task_reporter import TaskReporter
 
 # Define FlowerClient and client_fn
 class FlowerClient(NumPyClient):
@@ -34,4 +34,6 @@ if __name__ == "__main__":
             client=FlowerClient().to_client(),
         )
     except Exception as e:
+        if sys.argv[1] == "cli":
+            raise e
         task_reporter.send_error(e)
