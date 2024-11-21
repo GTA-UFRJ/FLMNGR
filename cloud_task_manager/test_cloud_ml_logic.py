@@ -8,7 +8,12 @@ print(f"Current dir: {dir_path}")
 class TestCloudMLLogic:
 
     def __init__(self, base_path) -> None:
+        db_path = os.path.join(base_path,"db/tasks.db")
+        if os.path.exists(db_path):
+            os.remove(db_path)
+
         self.service_cloud_ml = StubServiceCloudML(base_path)
+        self.index = 1
 
     # Must be part of BaseService
     def get_success_message(self, returned_data=None):
@@ -28,47 +33,103 @@ class TestCloudMLLogic:
         except Exception as e:
             return self.get_fail_message(e) 
 
-    def stop_non_existing_task(self):
-        print("(1) Try to stop a task that do not exist")
-        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_stop_server_task({"task_id":"aaaa"}))
+    def start_non_registered_task(self):
+        print(f"{self.index} Try to start a task that was not registered")
+        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_start_server_task({"task_id":"4fe5"}))
         try:
-            assert ret == {"status_code":500,"exception":"Task with ID=aaaa not found"}
+            assert ret == {"status_code":500,"exception":"Task with ID=4fe5 not registered"}
+            self.index += 1
         except:
-            print("Test (1) failed: ", ret)
+            print(f"Test {self.index} failed: ", ret)
+            exit()
+
+    def stop_non_registered_task(self):
+        print(f"{self.index} Try to stop a task that was not registered")
+        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_stop_server_task({"task_id":"4fe5"}))
+        try:
+            assert ret == {"status_code":500,"exception":"Task with ID=4fe5 not registered"}
+            self.index += 1
+        except:
+            print(f"Test {self.index} failed: ", ret)
+            exit()
+    
+    def register_task(self):
+        print(f"{self.index} Register a task")
+        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
+            {"task_id":"4fe5",'host':'localhost','port':8080}))
+        try:
+            assert ret == {"status_code":200,"return":None}
+            self.index += 1
+        except:
+            print(f"Test {self.index} failed: ", ret)
+            exit()
+
+    def register_repeated_task(self):
+        print(f"{self.index} Try to register a task with same ID")
+        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
+            {"task_id":"4fe5",'host':'localhost','port':8080}))
+        try:
+            assert ret == {"status_code":500,"exception":"UNIQUE constraint failed: tasks.ID"}
+            self.index += 1
+        except:
+            print(f"Test {self.index} failed: ", ret)
+            exit()
+
+    def register_invalid_task(self):
+        print(f"{self.index} Try to register task with invalid field")
+        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
+            {"task_id":"4fe5",'host':'localhost','port':'error'}))
+        try:
+            assert ret == {"status_code":500,"exception":"CHECK constraint failed: port >= 0 AND port <= 65535"}
+            self.index += 1
+        except:
+            print(f"Test {self.index} failed: ", ret)
             exit()
 
     def start_task_with_invalid_files_at_dik(self):
-        print("(2) Try to start a task without proper files")
+        print(f"{self.index} Try to start a task without proper files")
+
+        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
+            {"task_id":"aaaa",'host':'localhost','port':8080}))
+        try:
+            assert ret == {"status_code":200,"return":None}
+        except:
+            print(f"Test {self.index}, part (1/2), failed: ", ret)
+            exit()
+
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_start_server_task({"task_id":"aaaa"}))
         try:
             assert ret == {"status_code":500,"exception":f"Directory '{dir_path}/tasks/task_aaaa' does not exist."} 
+            self.index += 1
         except:
-            print("Test (2) failed: ", ret)
+            print(f"Test {self.index}, part (2/2), failed: ", ret)
             exit()
 
     def start_task_correctly(self):
-        print("(3) Start task correctly")
+        print(f"{self.index} Start task correctly")
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_start_server_task({"task_id":"4fe5"}))
         try: 
             assert ret == {"status_code":200, "return":None}
+            self.index += 1
         except:
-            print("Test (3) failed: ", ret)
+            print(f"Test {self.index} failed: ", ret)
             exit()
 
     def stop_task_correctly(self):
-        print("(4) Stop task correctly")
+        print(f"{self.index} Stop task correctly")
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_stop_server_task({"task_id":"4fe5"}))
         try: 
             assert ret == {"status_code":200, "return":None}
+            self.index += 1
         except:
-            print("Test (4) failed: ", ret)
+            print(f"Test {self.index} failed: ", ret)
             exit()
 
     def start_bugged_task(self):
-        print("(5) Start task with a bug")
+        print(f"{self.index} Start task with a bug")
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_start_server_task(
                 {"task_id":"4fe5",
@@ -76,7 +137,7 @@ class TestCloudMLLogic:
         try: 
             assert ret == {"status_code":200, "return":None}
         except:
-            print("Test (5.1) failed: ", ret)
+            print(f"Test {self.index}, part (1/2), failed: ", ret)
             exit()
 
         sleep(6)
@@ -86,42 +147,53 @@ class TestCloudMLLogic:
         try:
             assert ret == {"status_code":500,"exception":"Task with ID=4fe5 not found"}
         except:
-            print("Test (5.2) failed: ", ret)
+            print(f"Test {self.index}, part (2/2), failed: ", ret)
             exit()
-
+        self.index += 1
 
     def stop_task_alredy_finished(self):
-        print("(6) Stop task alredy finished")
+        print(f"{self.index} Stop task alredy finished")
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_stop_server_task({"task_id":"4fe5"}))
         try: 
             assert ret == {"status_code":500,"exception":"Task with ID=4fe5 not found"}
+            self.index += 1
         except:
-            print("Test (6) failed: ", ret)
+            print(f"Test {self.index} failed: ", ret)
             exit()
 
     def restart_task_correctly(self):
-        print("(7) Restart task using start function")
+        print(f"{self.index} Restart task using start function")
         
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_start_server_task({"task_id":"4fe5"}))
         try: 
             assert ret == {'status_code': 200, 'return': None}
         except:
-            print("Test (7) failed: ", ret)
+            print(f"Test {self.index}, part (1/2) failed: ", ret)
             exit()
         
         sleep(4)
+
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_stop_server_task({"task_id":"4fe5"}))
         try: 
             assert ret == {"status_code":200, "return":None}
         except:
-            print("Test (7) failed: ", ret)
+            print(f"Test {self.index}, part (2/2), failed: ", ret)
             exit()
+        self.index += 1
 
     def perform_tests(self):
-        self.stop_non_existing_task()
+        self.start_non_registered_task()
+        sleep(1)
+        self.stop_non_registered_task()
+        sleep(1)
+        self.register_task()
+        sleep(1)
+        self.register_repeated_task()
+        sleep(1)
+        self.register_invalid_task()
         sleep(1)
         self.start_task_with_invalid_files_at_dik()
         sleep(1)
@@ -137,11 +209,8 @@ class TestCloudMLLogic:
         sleep(1)
     
     def finish_tests(self):
-        self.service_cloud_ml.finish_cloud_ml()
+        self.service_cloud_ml.cloud_ml_backend.finish_all()
         
 if __name__ == "__main__":
     tester = TestCloudMLLogic(str(Path().resolve()))
-    try:
-        tester.perform_tests()
-    except:
-        tester.finish_tests()
+    tester.perform_tests()

@@ -4,6 +4,10 @@ from pathlib import Path
 from datetime import datetime
 from pprint import pprint
 
+class TaskNotRegistered(Exception):
+    def __init__(self, task_id:str):
+        super().__init__(f"Task with ID={task_id} not registered")
+
 class TasksDbInterface:
     """
     Tasks DB handler
@@ -31,7 +35,8 @@ class TasksDbInterface:
             host TEXT NOT NULL,
             port INTEGER CHECK(port >= 0 AND port <= 65535),
             running BOOLEAN,
-            selection_criteria TEXT
+            selection_criteria TEXT,
+            arguments TEXT
         );
         """
         self.cursor.execute(create_table_query)
@@ -48,7 +53,7 @@ class TasksDbInterface:
         self.cursor.execute(create_tags_table_query)
         self.connection.commit()
 
-    def _insert_into_tasks_table(self, task_id:str, host:str, port:int, selection_criteria:str):
+    def _insert_into_tasks_table(self, task_id:str, host:str, port:int, selection_criteria:str, arguments:str):
         creation_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         last_mod_date = creation_date
         insert_task_table_query = """
@@ -59,11 +64,12 @@ class TasksDbInterface:
             host, 
             port, 
             running, 
-            selection_criteria)
-        VALUES (?, ?, ?, ?, ?, ?, ?); 
+            selection_criteria,
+            arguments)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?); 
         """
         self.cursor.execute(insert_task_table_query,
-            (creation_date, last_mod_date, task_id, host, port, "FALSE", selection_criteria))
+            (creation_date, last_mod_date, task_id, host, port, "FALSE", selection_criteria, arguments))
 
     def _insert_into_tags_table(self, task_id:str, tags:list[str]):
         for tag in tags:
@@ -72,7 +78,7 @@ class TasksDbInterface:
                 VALUES (?, ?);
             """, (task_id, tag))
 
-    def insert_task(self, task_id:str, host:str, port:int, selection_criteria:str="", tags:list[str]=None):
+    def insert_task(self, task_id:str, host:str, port:int, selection_criteria:str="", arguments:str="", tags:list[str]=None):
         """
         Insert a new task into the tasks table and optionally insert tags.
         
@@ -87,13 +93,22 @@ class TasksDbInterface:
 
         :param selection_criteria: boolean expression for selecting clients using its atributes
         :type selection_criteria: str
+
+        :param arguments: command line arguments used when starting the task (optional)  
+        :type arguments: str
         
         :param tags: A list of tags associated with the task (optional).
         :type tags: list[str]
 
         :raises: sqlite3.IntegrityError
         """
-        self._insert_into_tasks_table(task_id, host, port, selection_criteria)
+        if selection_criteria is None:
+            selection_criteria = ''
+
+        if arguments is None:
+            arguments = ''
+
+        self._insert_into_tasks_table(task_id, host, port, selection_criteria, arguments)
         
         if tags:
             self._insert_into_tags_table(task_id, tags)
@@ -109,7 +124,12 @@ class TasksDbInterface:
         :type task_id: str
 
         :raises: sqlite3.Error
+
+        :raises: TaskNotRegistered
         """
+        if self.query_task(task_id) is None:
+            raise TaskNotRegistered(task_id)
+        
         last_mod_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.cursor.execute("""
             UPDATE tasks
@@ -119,7 +139,7 @@ class TasksDbInterface:
         self.connection.commit()
         print(f"Task {task_id} is now set to running.")
 
-    def set_task_not_running(self, task_id):
+    def set_task_not_running(self, task_id:str):
         """
         Set a task as not running by its ID.
         
@@ -127,7 +147,12 @@ class TasksDbInterface:
         :type task_id: str
 
         :raises: sqlite3.Error
+
+        :raises: TaskNotRegistered
         """
+        if self.query_task(task_id) is None:
+            raise TaskNotRegistered(task_id)
+        
         last_mod_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.cursor.execute("""
             UPDATE tasks
@@ -135,7 +160,6 @@ class TasksDbInterface:
             WHERE ID = ?;
         """, (last_mod_date, task_id))
         self.connection.commit()
-        print(f"Task {task_id} is now set to running.")
 
     def _select_from_tasks_table(self, task_id:str) -> list:
         self.cursor.execute("""
@@ -146,7 +170,8 @@ class TasksDbInterface:
                 host, 
                 port, 
                 running, 
-                selection_criteria 
+                selection_criteria,
+                arguments
             FROM tasks
             WHERE ID = ?;
         """, (task_id,))
@@ -156,7 +181,7 @@ class TasksDbInterface:
         self.cursor.execute("""
             SELECT tag
             FROM tags
-            WHERE task_id = ?;
+            WHERE ID = ?;
         """, (task_id,))
         return [row[0] for row in self.cursor.fetchall()]
 
@@ -171,11 +196,12 @@ class TasksDbInterface:
         :rtype: dict
 
         :raises: sqlite3.Error
+
+        :raises: TaskNotRegistered
         """    
         task = self._select_from_tasks_table(task_id)
         if not task:
-            print(f"No task found with ID: {task_id}")
-            return None
+            raise TaskNotRegistered(task_id)
             
         tags = self._select_from_tags_table(task_id)
         
@@ -187,6 +213,7 @@ class TasksDbInterface:
             "port": task[4],
             "running": task[5],
             "selection_criteria": task[6],
+            "arguments": task[7],
             "tags": tags
         }
 
@@ -207,7 +234,7 @@ class TasksDbInterface:
         task_map = {row[0]: row[1] for row in rows}
         return task_map
 
-    def update_task(self, task_id:str, host:str=None, port:int=None, running:bool=None, selection_criteria:str=None):
+    def update_task(self, task_id:str, host:str=None, port:int=None, running:bool=None, selection_criteria:str=None, arguments:str=None):
         """
         Update an existing task with new values. Arguments with None are not updated.
         Not used yet
@@ -227,11 +254,18 @@ class TasksDbInterface:
         :param selection_criteria: New selection criteria (optional)
         :type selection_criteria: str
 
+        :param arguments: new command line arguments used when starting the task (optional)  
+        :type arguments: str
+
         :raises: sqlite3.Error
+
+        :raises: TaskNotRegistered
         """
         if not task_id:
-            print("Task ID is required to update a task.")
             return
+        
+        if self.query_task(task_id) is None:
+            raise TaskNotRegistered(task_id)
         
         # Build the SQL update query dynamically based on non-None arguments
         fields = []
@@ -253,6 +287,10 @@ class TasksDbInterface:
         if selection_criteria is not None:
             fields.append("selection_criteria = ?")
             values.append(selection_criteria)
+
+        if arguments is not None:
+            fields.append("arguments = ?")
+            values.append(arguments)
         
         # Always update the last modification date
         fields.append("last_mod_date = ?")
@@ -281,7 +319,7 @@ class TasksDbInterface:
 
 if __name__ == "__main__":
     db_interface = TasksDbInterface(str(Path().resolve()))
-    db_interface.insert_task(task_id="1a2b", host="192.168.1.1", port=8080, selection_criteria="(has camera) and (data >= 30)", tags=['mnist','mlp'])
+    db_interface.insert_task(task_id="1a2b", host="192.168.1.1", port=8080, selection_criteria="(has camera) and (data >= 30)", arguments=" arg1 arg2", tags=['mnist','mlp'])
     db_interface.insert_task(task_id="2b3c", host="192.168.1.2", port=9090)
     db_interface.set_task_running("1a2b")
     task_map = db_interface.get_task_selection_criteria_map()
