@@ -28,3 +28,9 @@ Tasks DB interface
 .. automodule:: tasks_db_interface
    :members:
 
+Selection Criteria Evaluation Engine
+-------------------------------------
+
+.. automodule:: criteria_evaluation_engine
+   :members:
+

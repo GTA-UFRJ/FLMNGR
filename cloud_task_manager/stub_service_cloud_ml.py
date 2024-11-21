@@ -169,8 +169,16 @@ class StubServiceCloudML:
             arguments=received.get("arguments")
         )
 
-
     def rpc_call_query_client_info(self, client_id:str) -> dict:
+        """
+        Send an RPC message for client manager service with client ID requesting for its info
+
+        :param client_id: client ID
+        :type client_id: str
+
+        :returns: returned JSON from RPC with client info
+        :rtype: dicts
+        """
         pass
         """
         rpc_client = RpcClient("query_client_info")

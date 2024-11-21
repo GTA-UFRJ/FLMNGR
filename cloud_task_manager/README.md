@@ -5,6 +5,7 @@ This microservice is responsible for:
 * Implementing CRUD operations over all tasks, running or not
 * Mantaining client and server codes for inference, training, and aggregation for all tasks
 * Starting and stopping Flower aggreagtion services at the server by demand 
+* Logging Flower process information and errors (NOT YET IMPLEMENTED)
 
 ### Test Flower task
 
