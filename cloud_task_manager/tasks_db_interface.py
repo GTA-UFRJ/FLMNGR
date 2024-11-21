@@ -71,14 +71,14 @@ class TasksDbInterface:
         self.cursor.execute(insert_task_table_query,
             (creation_date, last_mod_date, task_id, host, port, "FALSE", selection_criteria, arguments))
 
-    def _insert_into_tags_table(self, task_id:str, tags:list[str]):
+    def _insert_into_tags_table(self, task_id:str, tags:list):
         for tag in tags:
             self.cursor.execute("""
                 INSERT INTO tags (ID, tag)
                 VALUES (?, ?);
             """, (task_id, tag))
 
-    def insert_task(self, task_id:str, host:str, port:int, selection_criteria:str="", arguments:str="", tags:list[str]=None):
+    def insert_task(self, task_id:str, host:str, port:int, selection_criteria:str="", arguments:str="", tags:list=None):
         """
         Insert a new task into the tasks table and optionally insert tags.
         
@@ -177,7 +177,7 @@ class TasksDbInterface:
         """, (task_id,))
         return self.cursor.fetchone()
     
-    def _select_from_tags_table(self, task_id:str) -> list[str]:
+    def _select_from_tags_table(self, task_id:str) -> list:
         self.cursor.execute("""
             SELECT tag
             FROM tags
@@ -227,7 +227,7 @@ class TasksDbInterface:
 
         self.cursor.execute("""
             SELECT ID, selection_criteria
-            FROM tasks;
+            FROM tasks WHERE running == TRUE;
         """)
         rows = self.cursor.fetchall()
         

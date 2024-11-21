@@ -55,14 +55,28 @@ class TestCloudMLLogic:
     
     def register_task(self):
         print(f"{self.index} Register a task")
+
         ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
-            {"task_id":"4fe5",'host':'localhost','port':8080}))
+            {"task_id":"4fe5",
+             'host':'localhost',
+             'port':8080,
+             'selection_criteria':'(data_qnt > 50) and (has_camera == False)'}))
         try:
             assert ret == {"status_code":200,"return":None}
-            self.index += 1
         except:
-            print(f"Test {self.index} failed: ", ret)
+            print(f"Test {self.index}, part (1/2), failed: ", ret)
             exit()
+
+        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
+            {"task_id":"aaaa",
+             'host':'localhost',
+             'port':8080}))
+        try:
+            assert ret == {"status_code":200,"return":None}
+        except:
+            print(f"Test {self.index}, part (2/2), failed: ", ret)
+            exit()
+        self.index += 1
 
     def register_repeated_task(self):
         print(f"{self.index} Try to register a task with same ID")
@@ -78,7 +92,7 @@ class TestCloudMLLogic:
     def register_invalid_task(self):
         print(f"{self.index} Try to register task with invalid field")
         ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
-            {"task_id":"4fe5",'host':'localhost','port':'error'}))
+            {"task_id":"bbbb",'host':'localhost','port':'error'}))
         try:
             assert ret == {"status_code":500,"exception":"CHECK constraint failed: port >= 0 AND port <= 65535"}
             self.index += 1
@@ -89,21 +103,13 @@ class TestCloudMLLogic:
     def start_task_with_invalid_files_at_dik(self):
         print(f"{self.index} Try to start a task without proper files")
 
-        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
-            {"task_id":"aaaa",'host':'localhost','port':8080}))
-        try:
-            assert ret == {"status_code":200,"return":None}
-        except:
-            print(f"Test {self.index}, part (1/2), failed: ", ret)
-            exit()
-
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_start_server_task({"task_id":"aaaa"}))
         try:
             assert ret == {"status_code":500,"exception":f"Directory '{dir_path}/tasks/task_aaaa' does not exist."} 
             self.index += 1
         except:
-            print(f"Test {self.index}, part (2/2), failed: ", ret)
+            print(f"Test {self.index} failed: ", ret)
             exit()
 
     def start_task_correctly(self):
@@ -170,7 +176,7 @@ class TestCloudMLLogic:
         try: 
             assert ret == {'status_code': 200, 'return': None}
         except:
-            print(f"Test {self.index}, part (1/2) failed: ", ret)
+            print(f"Test {self.index}, part (1/2), failed: ", ret)
             exit()
         
         sleep(4)
@@ -183,6 +189,48 @@ class TestCloudMLLogic:
             print(f"Test {self.index}, part (2/2), failed: ", ret)
             exit()
         self.index += 1
+
+    def client_requesting_task(self):
+        print(f"{self.index} Client requesting task")
+
+        print("I will force 'running' field for task 4fe5 to running")
+        self.service_cloud_ml.db_handler.set_task_running("4fe5")
+        
+        ret = self.call_function(
+            lambda: self.service_cloud_ml.rpc_exec_client_requesting_task({"client_id":"xxxx"}))
+        try: 
+            assert ret == {'status_code': 200, 'return': [{'ID': '4fe5', 'host': 'localhost', 'port': 8080, 'tags': []}]}
+            self.index += 1
+        except:
+            print(f"Test {self.index} failed: ", ret)
+            exit()
+        
+        print("I will force 'running' field for task 4fe5 to not running")
+        self.service_cloud_ml.db_handler.set_task_not_running("4fe5")
+
+    def update_task(self):
+        print(f"{self.index} Update task selection criteria")
+
+        ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_update_task(
+            {"task_id":"4fe5", "selection_criteria":"aaaaa"}))
+        try:
+            assert ret == {"status_code":200,"return":None}
+            self.index += 1
+        except:
+            print(f"Test {self.index} failed: ", ret)
+            exit()
+
+    def invalid_selection_crit(self):
+        print(f"{self.index} Request tasks, but they have an invalid selection criteria")
+        
+        ret = self.call_function(
+            lambda: self.service_cloud_ml.rpc_exec_client_requesting_task({"client_id":"xxxx"}))
+        try: 
+            assert ret == {'status_code': 200, 'return': []}
+            self.index += 1
+        except:
+            print(f"Test {self.index} failed: ", ret)
+            exit()
 
     def perform_tests(self):
         self.start_non_registered_task()
@@ -206,6 +254,12 @@ class TestCloudMLLogic:
         self.stop_task_alredy_finished()
         sleep(1)
         self.restart_task_correctly()
+        sleep(1)
+        self.client_requesting_task()
+        sleep(1)
+        self.update_task()
+        sleep(1)
+        self.invalid_selection_crit()
         sleep(1)
     
     def finish_tests(self):
