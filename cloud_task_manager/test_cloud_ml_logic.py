@@ -60,7 +60,11 @@ class TestCloudMLLogic:
             {"task_id":"4fe5",
              'host':'localhost',
              'port':8080,
-             'selection_criteria':'(data_qnt > 50) and (has_camera == False)'}))
+             'selection_criteria':'(data_qnt > 50) and (has_camera == False)',
+             'username':'user',
+             'password':'123',
+             'files_paths':['./task_4fe5/client.py','./task_4fe5/task.py']
+             }))
         try:
             assert ret == {"status_code":200,"return":None}
         except:
@@ -70,7 +74,10 @@ class TestCloudMLLogic:
         ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
             {"task_id":"aaaa",
              'host':'localhost',
-             'port':8080}))
+             'port':8080,
+             'username':'user',
+             'password':'123',
+             'files_paths':['./task_4fe5/client.py']}))
         try:
             assert ret == {"status_code":200,"return":None}
         except:
@@ -81,7 +88,9 @@ class TestCloudMLLogic:
     def register_repeated_task(self):
         print(f"{self.index} Try to register a task with same ID")
         ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
-            {"task_id":"4fe5",'host':'localhost','port':8080}))
+            {"task_id":"4fe5",'host':'localhost','port':8080,'username':'user',
+             'password':'123',
+             'files_paths':['./task_4fe5/client.py']}))
         try:
             assert ret == {"status_code":500,"exception":"UNIQUE constraint failed: tasks.ID"}
             self.index += 1
@@ -92,7 +101,9 @@ class TestCloudMLLogic:
     def register_invalid_task(self):
         print(f"{self.index} Try to register task with invalid field")
         ret = self.call_function(lambda: self.service_cloud_ml.rpc_exec_create_task(
-            {"task_id":"bbbb",'host':'localhost','port':'error'}))
+            {"task_id":"bbbb",'host':'localhost','port':'error','username':'user',
+             'password':'123',
+             'files_paths':['./task_4fe5/client.py']}))
         try:
             assert ret == {"status_code":500,"exception":"CHECK constraint failed: port >= 0 AND port <= 65535"}
             self.index += 1
@@ -199,7 +210,15 @@ class TestCloudMLLogic:
         ret = self.call_function(
             lambda: self.service_cloud_ml.rpc_exec_client_requesting_task({"client_id":"xxxx"}))
         try: 
-            assert ret == {'status_code': 200, 'return': [{'ID': '4fe5', 'host': 'localhost', 'port': 8080, 'tags': []}]}
+            assert ret == {'status_code': 200, 'return': 
+                           [{'ID': '4fe5', 
+                             'host': 'localhost', 
+                             'port': 8080, 
+                             'tags': [], 
+                             'client_arguments': None, 
+                             'username': 'user', 
+                             'password': '123', 
+                             'files_paths': ['./task_4fe5/client.py', './task_4fe5/task.py']}]}
             self.index += 1
         except:
             print(f"Test {self.index} failed: ", ret)

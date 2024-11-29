@@ -162,4 +162,7 @@ cython_debug/
 #.idea/
 
 cloud_task_manager/data/*
+client_task_manager/data/*
+client_task_manager/client_info/*
+client_task_manager/tasks
 cloud_task_manager/db/*

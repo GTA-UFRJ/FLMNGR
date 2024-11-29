@@ -35,11 +35,11 @@ class StubServiceCloudML:
         except TaskAlredyStopped:
             print(f"Received error from task {task_id}, which was alredy stopped")
 
-    def rpc_exec_create_task(self, received):
+    def rpc_exec_create_task(self, received:dict):
         """
         Receives a validated JSON message for configuring a new task in database, but not start yet
         
-        :param received: JSON containing task ID, host, port, arguments, selection criteria, and tags
+        :param received: JSON containing task ID, host, port, arguments, selection criteria, tags, ...
         :type received: dict
 
         :raises: sqlite3.IntegrityError
@@ -48,8 +48,12 @@ class StubServiceCloudML:
             task_id=received['task_id'],
             host=received['host'],
             port=received['port'],
+            username=received['username'],
+            password=received['password'],
+            files_paths=received['files_paths'],
             selection_criteria=received.get('selection_criteria'),
-            arguments=received.get('arguments'),
+            server_arguments=received.get('server_arguments'),
+            client_arguments=received.get('client_arguments'),
             tags=received.get('tags')
         )
 
@@ -58,7 +62,7 @@ class StubServiceCloudML:
         Receives a validated JSON message for starting a server task
         Validation occurs using our RPC library 
         
-        :param received: JSON containing task ID
+        :param received: JSON containing task ID and optional arguments
         :type received: dict
 
         :raises: FileNotFoundError 
@@ -80,11 +84,11 @@ class StubServiceCloudML:
 
         preinserted_task_info_dict = self.db_handler.query_task(received['task_id'])
         if received.get('arguments') is not None:
-            # Case 1: arguments informed by received argument
+            # Case 1: arguments informed by field received in RPC JSON message
             arguments = received.get('arguments')
         else:
             # Case 2: default arguments, regstered in DB 
-            arguments = preinserted_task_info_dict.get('ID')
+            arguments = preinserted_task_info_dict.get('server_arguments')
 
         self.db_handler.set_task_running(received['task_id'])
 
@@ -124,7 +128,7 @@ class StubServiceCloudML:
         :param received: JSON containing client ID
         :type received: dict
 
-        :return: list with selected tasks information (ID, host, port, tags)
+        :return: list with selected tasks information (ID, host, port, tags, ...)
         :rtype: list
         """
         client_info = self.rpc_call_query_client_info(received['client_id'])
@@ -140,7 +144,15 @@ class StubServiceCloudML:
             except InvalidSelCrit as e:
                 print(f"Problem checking compatibility with task {task_id}: {e}")
 
-        task_att_sent_to_client = ("ID","host","port","tags")
+        task_att_sent_to_client = (
+            "ID",
+            "host",
+            "port",
+            "tags",
+            "client_arguments",
+            "username",
+            "password",
+            "files_paths")
         tasks_info_list = []
         for task_id in compatible_tasks_id_list:
             task_info = self.db_handler.query_task(task_id)
@@ -166,7 +178,10 @@ class StubServiceCloudML:
             port=received.get("port"),
             running=received.get("port"),
             selection_criteria=received.get("selection_criteria"),
-            arguments=received.get("arguments")
+            server_arguments=received.get("server_arguments"),
+            client_arguments=received.get("client_arguments"),
+            username=received.get("username"),
+            password=received.get("password")            
         )
 
     def rpc_call_query_client_info(self, client_id:str) -> dict:

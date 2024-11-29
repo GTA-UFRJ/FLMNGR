@@ -3,6 +3,7 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime
 from pprint import pprint
+from werkzeug.security import check_password_hash, generate_password_hash
 
 class TaskNotRegistered(Exception):
     def __init__(self, task_id:str):
@@ -25,6 +26,7 @@ class TasksDbInterface:
         
         self._create_tasks_table_if_not_exists()
         self._create_tags_table_if_not_exists()
+        self._create_files_paths_table_if_not_exists()
 
     def _create_tasks_table_if_not_exists(self):
         create_table_query = """
@@ -36,7 +38,10 @@ class TasksDbInterface:
             port INTEGER CHECK(port >= 0 AND port <= 65535),
             running BOOLEAN,
             selection_criteria TEXT,
-            arguments TEXT
+            server_arguments TEXT,
+            client_arguments TEXT,
+            username TEXT,
+            password TEXT
         );
         """
         self.cursor.execute(create_table_query)
@@ -53,7 +58,27 @@ class TasksDbInterface:
         self.cursor.execute(create_tags_table_query)
         self.connection.commit()
 
-    def _insert_into_tasks_table(self, task_id:str, host:str, port:int, selection_criteria:str, arguments:str):
+    def _create_files_paths_table_if_not_exists(self):
+        create_tags_table_query = """
+        CREATE TABLE IF NOT EXISTS files_paths (
+            ID TEXT NOT NULL,
+            file_path TEXT NOT NULL,
+            FOREIGN KEY (ID) REFERENCES tasks(ID)
+        );
+        """
+        self.cursor.execute(create_tags_table_query)
+        self.connection.commit()
+
+    def _insert_into_tasks_table(self, 
+        task_id:str, 
+        host:str, 
+        port:int, 
+        selection_criteria:str, 
+        server_arguments:str, 
+        client_arguments:str, 
+        username:str, 
+        password:str):
+
         creation_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         last_mod_date = creation_date
         insert_task_table_query = """
@@ -65,11 +90,24 @@ class TasksDbInterface:
             port, 
             running, 
             selection_criteria,
-            arguments)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?); 
+            server_arguments,
+            client_arguments,
+            username,
+            password)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); 
         """
         self.cursor.execute(insert_task_table_query,
-            (creation_date, last_mod_date, task_id, host, port, "FALSE", selection_criteria, arguments))
+            (creation_date, 
+            last_mod_date, 
+            task_id, 
+            host, 
+            port, 
+            "FALSE", 
+            selection_criteria, 
+            server_arguments, 
+            client_arguments, 
+            username, 
+            password))
 
     def _insert_into_tags_table(self, task_id:str, tags:list):
         for tag in tags:
@@ -77,8 +115,25 @@ class TasksDbInterface:
                 INSERT INTO tags (ID, tag)
                 VALUES (?, ?);
             """, (task_id, tag))
+    
+    def _insert_into_files_paths_table(self, task_id:str, files_for_download:list):
+        for tag in files_for_download:
+            self.cursor.execute("""
+                INSERT INTO files_paths (ID, file_path)
+                VALUES (?, ?);
+            """, (task_id, tag))
 
-    def insert_task(self, task_id:str, host:str, port:int, selection_criteria:str="", arguments:str="", tags:list=None):
+    def insert_task(self, 
+        task_id:str, 
+        host:str, 
+        port:int, 
+        username:str, 
+        password:str, 
+        files_paths:list, 
+        selection_criteria:str="", 
+        server_arguments:str="", 
+        client_arguments:str="", 
+        tags:list=None):
         """
         Insert a new task into the tasks table and optionally insert tags.
         
@@ -94,8 +149,20 @@ class TasksDbInterface:
         :param selection_criteria: boolean expression for selecting clients using its atributes
         :type selection_criteria: str
 
-        :param arguments: command line arguments used when starting the task (optional)  
-        :type arguments: str
+        :param server_arguments: command line arguments used when starting the task server (optional)  
+        :type server_arguments: str
+
+        :param client_arguments: command line arguments used when starting the task client (optional)  
+        :type client_arguments: str
+
+        :param username: username for downloading files for client tasks 
+        :type username: str
+
+        :param password: clear password used by the client to download task files
+        :type password: str
+
+        :param files_paths: list of files path that will be downloaded and used by client  
+        :type files_paths: list        
         
         :param tags: A list of tags associated with the task (optional).
         :type tags: list[str]
@@ -105,11 +172,21 @@ class TasksDbInterface:
         if selection_criteria is None:
             selection_criteria = ''
 
-        if arguments is None:
-            arguments = ''
+        if server_arguments is None:
+            server_arguments = ''
 
-        self._insert_into_tasks_table(task_id, host, port, selection_criteria, arguments)
+        self._insert_into_tasks_table(
+            task_id, 
+            host, 
+            port, 
+            selection_criteria, 
+            server_arguments, 
+            client_arguments, 
+            username, 
+            password)
         
+        self._insert_into_files_paths_table(task_id, files_paths)
+
         if tags:
             self._insert_into_tags_table(task_id, tags)
         
@@ -171,7 +248,10 @@ class TasksDbInterface:
                 port, 
                 running, 
                 selection_criteria,
-                arguments
+                server_arguments, 
+                client_arguments,
+                username,
+                password
             FROM tasks
             WHERE ID = ?;
         """, (task_id,))
@@ -181,6 +261,14 @@ class TasksDbInterface:
         self.cursor.execute("""
             SELECT tag
             FROM tags
+            WHERE ID = ?;
+        """, (task_id,))
+        return [row[0] for row in self.cursor.fetchall()]
+    
+    def _select_from_files_paths_table(self, task_id:str) -> list:
+        self.cursor.execute("""
+            SELECT file_path
+            FROM files_paths
             WHERE ID = ?;
         """, (task_id,))
         return [row[0] for row in self.cursor.fetchall()]
@@ -203,6 +291,8 @@ class TasksDbInterface:
         if not task:
             raise TaskNotRegistered(task_id)
             
+        files_paths = self._select_from_files_paths_table(task_id)
+            
         tags = self._select_from_tags_table(task_id)
         
         return {
@@ -213,8 +303,12 @@ class TasksDbInterface:
             "port": task[4],
             "running": task[5],
             "selection_criteria": task[6],
-            "arguments": task[7],
-            "tags": tags
+            "server_arguments": task[7],
+            "client_arguments": task[8],
+            "username": task[9],
+            "password": task[10],
+            "tags": tags,
+            "files_paths": files_paths
         }
 
     def get_task_selection_criteria_map(self)->dict:
@@ -234,7 +328,16 @@ class TasksDbInterface:
         task_map = {row[0]: row[1] for row in rows}
         return task_map
 
-    def update_task(self, task_id:str, host:str=None, port:int=None, running:bool=None, selection_criteria:str=None, arguments:str=None):
+    def update_task(self, 
+        task_id:str, 
+        host:str=None, 
+        port:int=None, 
+        running:bool=None, 
+        selection_criteria:str=None, 
+        server_arguments:str=None,
+        client_arguments:str=None, 
+        username:str=None, 
+        password:str=None):
         """
         Update an existing task with new values. Arguments with None are not updated.
         Not used yet
@@ -254,8 +357,14 @@ class TasksDbInterface:
         :param selection_criteria: New selection criteria (optional)
         :type selection_criteria: str
 
-        :param arguments: new command line arguments used when starting the task (optional)  
-        :type arguments: str
+        :param server_arguments: new command line server_arguments used when starting the task (optional)  
+        :type server_arguments: str
+
+        :param username: username for downloading files for client tasks 
+        :type username: str
+
+        :param password: clear password used by the client to download task files
+        :type password: str
 
         :raises: sqlite3.Error
 
@@ -288,10 +397,22 @@ class TasksDbInterface:
             fields.append("selection_criteria = ?")
             values.append(selection_criteria)
 
-        if arguments is not None:
-            fields.append("arguments = ?")
-            values.append(arguments)
+        if server_arguments is not None:
+            fields.append("server_arguments = ?")
+            values.append(server_arguments)
+
+        if client_arguments is not None:
+            fields.append("client_arguments = ?")
+            values.append(client_arguments)
+
+        if username is not None:
+            fields.append("username = ?")
+            values.append(username)
         
+        if password is not None:
+            fields.append("password = ?")
+            values.append(password)
+
         # Always update the last modification date
         fields.append("last_mod_date = ?")
         values.append(last_mod_date)
@@ -319,8 +440,19 @@ class TasksDbInterface:
 
 if __name__ == "__main__":
     db_interface = TasksDbInterface(str(Path().resolve()))
-    db_interface.insert_task(task_id="1a2b", host="192.168.1.1", port=8080, selection_criteria="(has camera) and (data >= 30)", arguments=" arg1 arg2", tags=['mnist','mlp'])
-    db_interface.insert_task(task_id="2b3c", host="192.168.1.2", port=9090)
+    db_interface.insert_task(
+        task_id="1a2b", 
+        host="192.168.1.1", 
+        port=8080,
+        username="user",
+        password="123",
+        files_paths=['./tasks/task_1a2b/client.py','./tasks/task_1a2b/task.py'],
+        selection_criteria="(has camera) and (data >= 30)", 
+        server_arguments=" arg1 arg2", 
+        tags=['mnist','mlp'])
+    db_interface.insert_task(task_id="2b3c", host="192.168.1.2", port=9090, username='user',
+        password="123",
+        files_paths=['./tasks/task_1a2b/client.py','./tasks/task_1a2b/task.py'],)
     db_interface.set_task_running("1a2b")
     task_map = db_interface.get_task_selection_criteria_map()
     pprint(task_map)

@@ -29,11 +29,16 @@ if __name__ == "__main__":
     trainloader, testloader = load_data()
 
     try:
+        if len(sys.argv) >= 3:
+            if sys.argv[2] == "test-error":
+                raise Exception
+
         start_client(
             server_address="127.0.0.1:8080",
             client=FlowerClient().to_client(),
         )
     except Exception as e:
+        print(f"Error! {e}")
         if sys.argv[1] == "cli":
             raise e
         task_reporter.send_error(e)
