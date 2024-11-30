@@ -32,6 +32,10 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
         task_reporter.send_stats(comm_round,val_accuracies)
     comm_round += 1
 
+    acc = sum(val_accuracies) / sum(examples)
+    if acc >= 0.9:
+        task_reporter.trigger("trigger_example",str(acc))
+
     # Aggregate and return custom metric (weighted average)
     return {
         "train_loss": sum(train_losses) / sum(examples),

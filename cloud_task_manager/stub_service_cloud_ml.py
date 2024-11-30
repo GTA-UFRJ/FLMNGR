@@ -17,6 +17,7 @@ class StubServiceCloudML:
         self,
         workpath:str) -> None:
         
+        self.workpath = workpath
         self.cloud_ml_backend = CloudML(workpath)
         self.db_handler = TasksDbInterface(workpath)
 
@@ -79,7 +80,8 @@ class StubServiceCloudML:
         """
         forwarder = StubForwardMessagesFromTask(
             received['task_id'],
-            self.handle_error_from_task)
+            self.handle_error_from_task,
+            self.workpath)
         callback = forwarder.process_messages
 
         preinserted_task_info_dict = self.db_handler.query_task(received['task_id'])

@@ -69,3 +69,22 @@ class TaskReporter:
         json_message = json.dumps(message)
         print(json_message, flush=True)
 
+    def trigger(self, trigger_name:str, trigger_arguments:str=""):
+        """
+        Format : {"type":"trigger","trigger_name":{trigger_name},"trigger_arguments":{trigger_arguments}}
+
+        :param trigger_name: name of the code that is executed uppon receiving this trigger
+        :type trigger_name: str
+
+        :param trigger_arguments: arguments for running trigger
+        :type trigger_arguments: str
+        """
+        message = {
+            "type": "print",
+            "trigger_name":trigger_name,
+            "trigger_arguments": trigger_arguments
+        }
+        json_message = json.dumps(message)
+        print(json_message, flush=True)
+
+

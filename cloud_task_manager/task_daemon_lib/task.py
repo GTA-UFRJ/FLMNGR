@@ -18,12 +18,13 @@ class Task:
 
     :raises: FileNotFoundError 
     """
-    def __init__(self, work_path: str, task_id: str) -> None:
+    def __init__(self, work_path: str, task_id: str, enable_listener:bool=True) -> None:
         self.work_path = work_path
         self.task_id = task_id
         self.task_dir_name = self._get_task_directory_name(task_id)
         self.forced_termination_timeout = 5
         self.running = False
+        self.enable_listener = enable_listener
 
     def get_task_id(self) -> str:
         return self.task_id
@@ -41,7 +42,7 @@ class Task:
     def _stop_message_listener(self):
         self.message_listener.stop()
 
-    def run_task(self, filename:str, message_handler:Callable[[bytes],None], arguments:list[str]):
+    def run_task(self, filename:str, message_handler:Callable[[bytes],None], arguments:list[str], add_work_path:bool=True):
         """
         Start child process with 'filename', as well as the message listener
 
@@ -61,15 +62,21 @@ class Task:
         if self.running:
             raise TaskAlredyRunning(self.task_id)
 
-        execution_command_list = [sys.executable, 
-                                  filename, 
-                                  self.work_path]
+        if add_work_path:
+            execution_command_list = [sys.executable, 
+                                    filename, 
+                                    self.work_path]
+        else:
+            execution_command_list = [sys.executable, 
+                                    filename]
+            
         if arguments:
             execution_command_list.extend(arguments)
 
         try:
             self.process = subprocess.Popen(execution_command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            self._start_message_listener(message_handler)
+            if self.enable_listener:
+                self._start_message_listener(message_handler)
             print(f"Started {self.process}")
             self.running = True
         except PermissionError:
@@ -87,7 +94,8 @@ class Task:
         print("Terminating process")
         self.process.terminate()
         self._wait_and_force_termination_after_waiting()
-        self._stop_message_listener()
+        if self.enable_listener:
+            self._stop_message_listener()
         self.running = False
     
     def _wait_and_force_termination_after_waiting(self):
