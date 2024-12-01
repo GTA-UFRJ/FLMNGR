@@ -10,3 +10,6 @@ sphinxcontrib.httpdomain==1.8.1
 deepdiff
 
 flask
+pika
+jsonschema
+json
