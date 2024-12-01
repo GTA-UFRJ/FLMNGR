@@ -33,11 +33,11 @@ class Net(nn.Module):
         return self.fc3(x)
 
 
-def load_data():
+def load_data(data_path):
     """Load CIFAR-10 (training and test set)."""
     trf = Compose([ToTensor(), Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    trainset = CIFAR10("./data", train=True, download=True, transform=trf)
-    testset = CIFAR10("./data", train=False, download=True, transform=trf)
+    trainset = CIFAR10(data_path, train=True, download=True, transform=trf)
+    testset = CIFAR10(data_path, train=False, download=True, transform=trf)
     return DataLoader(trainset, batch_size=32, shuffle=True), DataLoader(testset)
 
 

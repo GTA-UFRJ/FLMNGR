@@ -26,7 +26,9 @@ if __name__ == "__main__":
         task_reporter = TaskReporter()
 
     net = Net().to(DEVICE)
-    trainloader, testloader = load_data()
+    
+    data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data'))
+    trainloader, testloader = load_data(data_path)
 
     try:
         if len(sys.argv) >= 3:
@@ -42,3 +44,5 @@ if __name__ == "__main__":
         if sys.argv[1] == "cli":
             raise e
         task_reporter.send_error(e)
+
+    task_reporter.send_info("Finished")

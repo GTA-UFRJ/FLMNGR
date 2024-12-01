@@ -9,11 +9,12 @@ class ClientInfoManager:
     :param workpath: project location, within which "client_info" dir will reside
     :type workpath: str
     """
-    def __init__(self, work_path:str) -> None:
+    def __init__(self, work_path:str, id:str) -> None:
         client_info_dir_path = os.path.join(work_path, 'client_info')
         Path(client_info_dir_path).mkdir(parents=True, exist_ok=True)
         
-        self.client_info_file_path = os.path.join(client_info_dir_path, 'info.json')
+        self.client_info_file_path = os.path.join(client_info_dir_path, f'{id}_info.json')
+        
         self.has_changed = False
 
     def get_info(self)->dict:

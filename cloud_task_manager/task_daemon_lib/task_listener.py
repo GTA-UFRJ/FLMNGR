@@ -2,7 +2,6 @@ import threading
 from typing import Callable
 import subprocess
 
-
 class TaskMessageListener:
     """
     Interface for listen and forward bytes received from processes through a 

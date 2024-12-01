@@ -29,11 +29,13 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     val_accuracies = [num_examples * m["val_accuracy"] for num_examples, m in metrics]
 
     if sys.argv[1] != "cli":
-        task_reporter.send_stats(comm_round,val_accuracies)
+        task_reporter.send_stats(comm_round,metrics)
+    else:
+        print(metrics)
     comm_round += 1
 
     acc = sum(val_accuracies) / sum(examples)
-    if acc >= 0.9:
+    if acc >= 0.5:
         task_reporter.trigger("trigger_example",str(acc))
 
     # Aggregate and return custom metric (weighted average)
@@ -50,7 +52,7 @@ def get_strategy():
 
     return FedAvg(
         fraction_fit=1.0,  # Select all available clients
-        fraction_evaluate=0.0,  # Disable evaluation
+        fraction_evaluate=1.0,  # Disable evaluation
         min_available_clients=2,
         fit_metrics_aggregation_fn=weighted_average,
         initial_parameters=parameters,
@@ -63,7 +65,7 @@ if __name__ == "__main__":
 
     comm_round = 1
 
-    config = ServerConfig(num_rounds=3)
+    config = ServerConfig(num_rounds=5)
 
     try:
         if len(sys.argv) >= 3:
@@ -79,3 +81,6 @@ if __name__ == "__main__":
         if sys.argv[1] == "cli":
             raise e
         task_reporter.send_error(e)
+
+    if sys.argv[1] != "cli":
+        task_reporter.send_info("Finished")

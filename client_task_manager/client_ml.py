@@ -116,4 +116,4 @@ class ClientML:
         """
         Returns a list with running task's IDs
         """
-        return self.task_id_to_task_object_map.keys() 
+        return list(self.task_id_to_task_object_map.keys())

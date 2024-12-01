@@ -1,6 +1,5 @@
 from task_daemon_lib.task import Task
 import os
-from time import sleep
 from pathlib import Path
 from typing import Callable
 
@@ -28,7 +27,8 @@ class ClientSideTask(Task):
     def _get_client_main_file_name(self, task_dir_name:str): 
         client_file_name = os.path.join(task_dir_name, 'client.py')
         if not os.path.isfile(client_file_name):
-            raise FileNotFoundError(f"File '{client_file_name}' not found in directory '{task_dir_name}'.")
+            print(f"File '{client_file_name}' not found in directory '{task_dir_name}'.")
+            raise FileNotFoundError
         return client_file_name
 
     def run_task_client(self):

@@ -1,7 +1,8 @@
 from flask import Flask, request, send_from_directory, abort
 import os
-from tasks_db_interface import TasksDbInterface
+from tasks_db_interface import *
 from pathlib import Path
+import sys
 
 class HostTasksManager:
     def __init__(
@@ -28,10 +29,13 @@ app = Flask(__name__)
 @app.route('/download/<task>/<filename>', methods=['GET'])
 def download_file(task, filename):
     """Serve a file for download."""
-    ctx = HostTasksManager(str(Path().resolve()))
-    if not ctx.authenticate(task, request.authorization):
-        return unauthorized_response()
-    
+    ctx = HostTasksManager(sys.argv[1])
+    try:
+        if not ctx.authenticate(task, request.authorization):
+            return unauthorized_response()
+    except TaskNotRegistered as e:
+        return task_not_registered_response()
+
     task_folder = os.path.join(ctx.upload_folder, f"task_{task}")
     print(f"File: {os.path.join(task_folder, filename)}")
     
@@ -43,6 +47,13 @@ def unauthorized_response():
         "Unauthorized access. Please provide valid credentials.",
         401,
         {"WWW-Authenticate": 'Basic realm="Login Required"'},
+    )
+
+def task_not_registered_response():
+    return (
+        "File not found",
+        404,
+        {},
     )
 
 if __name__ == '__main__':

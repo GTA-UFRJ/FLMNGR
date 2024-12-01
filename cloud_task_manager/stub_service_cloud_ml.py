@@ -78,9 +78,16 @@ class StubServiceCloudML:
 
         :raises: TaskNotRegistered
         """
+        def finish_task(task_id:str):
+            try:
+                self.rpc_exec_stop_server_task({'task_id':task_id})
+            except Exception as e:
+                print(e)
+                raise e
         forwarder = StubForwardMessagesFromTask(
             received['task_id'],
             self.handle_error_from_task,
+            finish_task,
             self.workpath)
         callback = forwarder.process_messages
 

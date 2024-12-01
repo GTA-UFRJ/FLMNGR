@@ -83,6 +83,7 @@ class CloudML:
             arguments_list)
         
         self._insert_new_task_in_map(task_id, server_side_task_object)
+        print(f"Start task {task_id}")
         server_side_task_object.run_task_server()
 
     def stop_task(self, task_id:str):
@@ -96,6 +97,7 @@ class CloudML:
         
         :raises: TaskAlredyStopped
         """
+        print(f"Stop task {task_id}")
         server_side_task_object = self._remove_task_from_map(task_id)
         server_side_task_object.stop_task_server()
 

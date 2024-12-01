@@ -1,5 +1,5 @@
 from client_ml import ClientML
-from stub_process_messages_from_task import StubForwardMessagesFromTask
+from stub_process_messages_from_client_task import StubForwardMessagesFromClientTask
 from task_daemon_lib.task_exceptions import TaskAlredyStopped
 from client_info_manager import ClientInfoManager
 from task_files_downloader import download_task_training_files
@@ -38,12 +38,15 @@ class StubServiceClientML:
         self.download_url = download_url
         self.tasks_path = os.path.join(workpath,"tasks")
 
-        self.client_info_handler = ClientInfoManager(workpath)
+        self.client_info_handler = ClientInfoManager(workpath, id=client_info.get("ID"))
         self.initial_client_info = client_info
 
+        self.client_info_handler.save_complete_info(client_info)
+        
+        self.current_tasks_list = []
+        self.problematic_tasks = []
+        
         if autorun:
-
-            self.client_info_handler.save_complete_info(client_info)
     
             policy_functions = {"one":self.run_task_one_policy,
                                 "all":self.run_tasks_all_policy}
@@ -52,9 +55,6 @@ class StubServiceClientML:
             if policy_function is None:
                 print("Policy should be 'one' or 'all'. Default: one")
                 policy_function = self.run_task_one_policy
-    
-            self.current_tasks_list = []
-            self.problematic_tasks = []
     
             self._continuous_procedure(policy_function)
 
@@ -87,7 +87,7 @@ class StubServiceClientML:
         :type tasks_lists: list
         """
         running_tasks = self.client_ml_backend.get_running_tasks()
-        if running_tasks != []: # Task running? Do nothing
+        if len(running_tasks) != 0: # Task running? Do nothing
             return
         
         candidates_tasks = [task for task in tasks_list 
@@ -108,6 +108,7 @@ class StubServiceClientML:
         except Exception as e:
             print(f"Exception occured while starting task {task_id}: {e}")
             self.problematic_tasks.append(selected_task_info)
+            return
 
         self.start_client_task(task_id, task_arguments)
 
@@ -199,9 +200,10 @@ class StubServiceClientML:
         :raises: PermissionError
         """
         
-        forwarder = StubForwardMessagesFromTask(
+        forwarder = StubForwardMessagesFromClientTask(
             task_id,
-            self.handle_error_from_task)
+            self.handle_error_from_task,
+            self.client_ml_backend.stop_task)
         callback = forwarder.process_messages
         
         self.client_ml_backend.start_new_task(

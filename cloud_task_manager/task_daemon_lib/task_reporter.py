@@ -1,6 +1,4 @@
-import socket
 import json
-from sys import stdout, stderr
 
 class TaskReporter:
     """
@@ -9,9 +7,9 @@ class TaskReporter:
     def __init__(self): 
         self.send_info("Started")
 
-    def send_stats(self, task_round:int, acc:int):
+    def send_stats(self, task_round:int, acc:int): 
         """
-        Format: {"type": "model","round": strtask_round),"acc": str(acc)}
+        Format: {"type": "model","round": str(task_round),"acc": str(acc)}
 
         :param task_round: Flower communication round
         :type task_round: int
@@ -32,7 +30,7 @@ class TaskReporter:
         Format: {"type": "info","info": info}
 
         :param info: or warning, or generic information
-        :type info: str
+        :type info: str 
         """
         message = {
             "type": "info",
@@ -80,7 +78,7 @@ class TaskReporter:
         :type trigger_arguments: str
         """
         message = {
-            "type": "print",
+            "type": "trigger",
             "trigger_name":trigger_name,
             "trigger_arguments": trigger_arguments
         }

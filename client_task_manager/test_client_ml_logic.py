@@ -12,7 +12,7 @@ class TestClientMLLogic:
 
     def __init__(self, base_path) -> None:
         self.base_path = base_path
-        info_path = os.path.join(base_path,"client_info/clinet_info.pkl")
+        info_path = os.path.join(base_path,"client_info/guilhermeeec_info.json")
         if os.path.exists(info_path):
             os.remove(info_path)
 
@@ -177,7 +177,7 @@ class TestClientMLLogic:
     def start_task_correctly(self):
         print(f"{self.index} Start task correctly")
         
-        print("\n--> Go to cloud_task_manager dir and run 'python -m python -m tasks.task_4fe5.server cli'")
+        print("\n--> Go to cloud_task_manager dir and run 'python -m tasks.task_4fe5.server cli'")
         input("--> After server is started, press enter to continue...")
 
         ret = self.call_function(

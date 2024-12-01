@@ -2,9 +2,9 @@ import json
 from task_daemon_lib.task_exceptions import TaskUnknownMessageType
 from typing import Callable
  
-# will be used by service_cloud_ml for receiving messages
+# will be used by service_client_ml for receiving messages
 # from Flower subprocesses for updating task database 
-class StubForwardMessagesFromTask:
+class StubForwardMessagesFromClientTask:
     """
     Handles messages received from subprocess using task listener from FTDL
 
@@ -14,9 +14,10 @@ class StubForwardMessagesFromTask:
     :param uppon_receiving_error: function that receives task ID for finishing it 
     :type uppon_receiving_error: Callable[[str],None]
     """
-    def __init__(self, task_id:str, uppon_receiving_error: Callable[[str],None]):
+    def __init__(self, task_id:str, uppon_receiving_error: Callable[[str],None], uppon_receiving_finish: Callable[[str],None]):
         self.task_id = task_id
         self.uppon_receiving_error = uppon_receiving_error
+        self.uppon_receiving_finish = uppon_receiving_finish
 
     def call_coresponding_func_by_type(self, message:dict):
         """
@@ -29,13 +30,13 @@ class StubForwardMessagesFromTask:
         """
         message_type = message.get("type")
         if message_type == "model":
-            self.process_model(message)
+            self.process_model(message.get("model"))
         elif message_type == "info":
-            self.process_info(message)
+            self.process_info(message.get("info"))
         elif message_type == "print":
-            self.process_print(message)
+            self.process_print(message.get("message"))
         elif message_type == "error":
-            self.process_error(message)
+            self.process_error(message.get("exception"))
         else:
             raise TaskUnknownMessageType()
 
@@ -55,25 +56,26 @@ class StubForwardMessagesFromTask:
             # Replace by a log 
             print(f"[{self.task_id}] {message.decode("utf8").strip()}")
 
-    def process_error(self, message:dict):
+    def process_error(self, exception_message:str):
         """
         Call uppon_receiving_error external function to finish the task
 
         :param message: received exception message from task
-        :type message: dict
+        :type message: str
         """
         try:
-            excpetion_message = message["exception"]
-            print(f"Received error from task {self.task_id}: {excpetion_message}")
+            print(f"Received error from task {self.task_id}: {exception_message}")
             self.uppon_receiving_error(self.task_id)
         except Exception as e:
             print(f"Could not completelly process the error: {e}")
     
-    def process_model(self, message: bytes):
-        print(f"Saving model message from task {self.task_id}: {message}")
+    def process_model(self, model: bytes):
+        print(f"Saving model message from task {self.task_id}: {model}")
 
-    def process_info(self, message: dict):
-        print(f"Sending info message from task {self.task_id} to log: {message}")
+    def process_info(self, info: str):
+        if info == "Finished":
+            print(f"Received finish info from task {self.task_id}")
+            self.uppon_receiving_finish(self.task_id)
 
     def process_print(self, message: str):
         print("P ", message["message"])

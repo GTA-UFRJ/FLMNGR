@@ -1,8 +1,6 @@
 from task_daemon_lib.task import Task
 import os
-from time import sleep
 from pathlib import Path
-from typing import Callable
 
 class Trigger(Task):
     """

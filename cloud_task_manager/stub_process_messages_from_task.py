@@ -2,6 +2,7 @@ import json
 from task_daemon_lib.task_exceptions import TaskUnknownMessageType
 from task_daemon_lib.trigger import Trigger
 from typing import Callable
+from pprint import pprint
  
 # will be used by service_cloud_ml for receiving messages
 # from Flower subprocesses for updating task database 
@@ -15,10 +16,11 @@ class StubForwardMessagesFromTask:
     :param uppon_receiving_error: function that receives task ID for finishing it 
     :type uppon_receiving_error: Callable[[str],None]
     """
-    def __init__(self, task_id:str, uppon_receiving_error: Callable[[str],None], work_path:str):
+    def __init__(self, task_id:str, uppon_receiving_error: Callable[[str],None], uppon_receiving_finish: Callable[[str],None], work_path:str):
         self.task_id = task_id
         self.work_path = work_path
         self.uppon_receiving_error = uppon_receiving_error
+        self.uppon_receiving_finish = uppon_receiving_finish
 
     def call_coresponding_func_by_type(self, message:dict):
         """
@@ -31,7 +33,7 @@ class StubForwardMessagesFromTask:
         """
         message_type = message.get("type")
         if message_type == "model":
-            self.process_model(message.get("model"))
+            self.process_model(message)
         elif message_type == "info":
             self.process_info(message.get("info"))
         elif message_type == "print":
@@ -89,11 +91,13 @@ class StubForwardMessagesFromTask:
         except Exception as e:
             print(f"Could not run trigger: {e}")
 
-    def process_model(self, model: bytes):
-        print(f"Saving model message from task {self.task_id}: {model}")
-
-    def process_info(self, info: dict):
-        print(f"Sending info message from task {self.task_id} to log: {info}")
+    def process_model(self, message: dict):
+        pprint(message)
+ 
+    def process_info(self, info: str):
+        if info == "Finished":
+            print(f"Received finish info from task {self.task_id}")
+            self.uppon_receiving_finish(self.task_id)
 
     def process_print(self, message: str):
         print("P ", message["message"])
