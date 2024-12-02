@@ -90,6 +90,25 @@ except Exception as e:
     task_reporter.send_error(e)
 ```
 
+# Microservice interconnection library
+
+You must have Docker installed. For testing, run:
+```
+docker rm broker-rabbit
+docker run -d --hostname broker --name broker-rabbit -p 5672:5672 rabbitmq:3
+```
+
+Now, run the microservice:
+```
+python -m microservice_interconnect.sample_service
+```
+
+Finally, in other terminal, run the tests:
+```
+python -m microservice_interconnect.test_sample_service
+```
+```
+
 ### Test Cloud Task Manager service
 
 Cloud Task Manager is a component that receives messages through a RabbitMQ

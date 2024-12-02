@@ -1,7 +1,7 @@
 import pika
 import json
-import signal
 import jsonschema
+import threading
 from typing import Dict, Any
 
 import pika.channel
@@ -58,7 +58,8 @@ class BaseService:
         """
 
         response = self._process_generic_request(body, func_name=props.type)
-        self._send_response(ch, props, method,response)
+        self._send_response(ch, props, method, response)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def _process_generic_request(self, body:str, func_name:str) -> str:
         """
@@ -83,7 +84,7 @@ class BaseService:
 
         except jsonschema.ValidationError as e: 
             response = {
-                'status_code': 500,
+                'status_code': 400,
                 'exception': f"Invalid message: {e}"
             }
         
@@ -93,6 +94,7 @@ class BaseService:
                 'exception': f"An unknown error occured: {e}"
             }
         
+        print(f"Response: {response}")
         return json.dumps(response)
 
     def _try_exec_child_func_and_build_response(self, func, argument):
@@ -117,25 +119,19 @@ class BaseService:
             ),
             body=response
         )
-        ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    def start(self):
-        def signal_handler(sig: int, frame: Any) -> None:
-            print('Stopping service...')
-            self.stop()
-            print('Service stopped.')
-
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
+    def start(self, background:bool=False):
 
         self.connection = pika.SelectConnection(
-            pika.ConnectionParameters("localhost"),
-            on_close_callback=self._on_open
+            pika.ConnectionParameters(host="localhost"),
+            on_open_callback=self._on_open
         )
-        try: 
+
+        if background:
+            service_thread = threading.Thread(target=self.connection.ioloop.start)
+            service_thread.start()
+        else:
             self.connection.ioloop.start()
-        except:
-            self.connection.close()
 
     def stop(self):
         if not self.connection.is_closed:
