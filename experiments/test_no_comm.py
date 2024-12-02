@@ -137,8 +137,6 @@ class NoCommunication:
 
         print("=========== End experiment 0 ===========")
 
-        input(self.cloud_task_manager.cloud_ml_backend.task_id_to_task_object_map)
-
     def _finish(self):
         self.task_downlaod_server.kill()
         self._delete_data_files()

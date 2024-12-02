@@ -21,14 +21,17 @@ class TasksDbInterface:
         
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         
-        self.connection = sqlite3.connect(self.db_path)
-        self.cursor = self.connection.cursor()
+        connection = sqlite3.connect(self.db_path)
         
-        self._create_tasks_table_if_not_exists()
-        self._create_tags_table_if_not_exists()
-        self._create_files_paths_table_if_not_exists()
+        cursor = connection.cursor()
+        self._create_tasks_table_if_not_exists(cursor)
+        self._create_tags_table_if_not_exists(cursor)
+        self._create_files_paths_table_if_not_exists(cursor)
+        
+        connection.commit()
+        connection.close()
 
-    def _create_tasks_table_if_not_exists(self):
+    def _create_tasks_table_if_not_exists(self, cursor:sqlite3.Cursor):
         create_table_query = """
         CREATE TABLE IF NOT EXISTS tasks (
             creation_date TEXT NOT NULL,
@@ -44,10 +47,9 @@ class TasksDbInterface:
             password TEXT
         );
         """
-        self.cursor.execute(create_table_query)
-        self.connection.commit()
+        cursor.execute(create_table_query)
 
-    def _create_tags_table_if_not_exists(self):
+    def _create_tags_table_if_not_exists(self, cursor:sqlite3.Cursor):
         create_tags_table_query = """
         CREATE TABLE IF NOT EXISTS tags (
             ID TEXT NOT NULL,
@@ -55,21 +57,20 @@ class TasksDbInterface:
             FOREIGN KEY (ID) REFERENCES tasks(ID)
         );
         """
-        self.cursor.execute(create_tags_table_query)
-        self.connection.commit()
+        cursor.execute(create_tags_table_query)
 
-    def _create_files_paths_table_if_not_exists(self):
-        create_tags_table_query = """
+    def _create_files_paths_table_if_not_exists(self, cursor:sqlite3.Cursor):
+        create_files_paths_table_query = """
         CREATE TABLE IF NOT EXISTS files_paths (
             ID TEXT NOT NULL,
             file_path TEXT NOT NULL,
             FOREIGN KEY (ID) REFERENCES tasks(ID)
         );
         """
-        self.cursor.execute(create_tags_table_query)
-        self.connection.commit()
+        cursor.execute(create_files_paths_table_query)
 
-    def _insert_into_tasks_table(self, 
+    def _insert_into_tasks_table(self,
+        cursor:sqlite3.Cursor,
         task_id:str, 
         host:str, 
         port:int, 
@@ -96,7 +97,7 @@ class TasksDbInterface:
             password)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); 
         """
-        self.cursor.execute(insert_task_table_query,
+        cursor.execute(insert_task_table_query,
             (creation_date, 
             last_mod_date, 
             task_id, 
@@ -109,16 +110,16 @@ class TasksDbInterface:
             username, 
             password))
 
-    def _insert_into_tags_table(self, task_id:str, tags:list):
+    def _insert_into_tags_table(self, cursor:sqlite3.Cursor, task_id:str, tags:list):
         for tag in tags:
-            self.cursor.execute("""
+            cursor.execute("""
                 INSERT INTO tags (ID, tag)
                 VALUES (?, ?);
             """, (task_id, tag))
     
-    def _insert_into_files_paths_table(self, task_id:str, files_for_download:list):
+    def _insert_into_files_paths_table(self, cursor:sqlite3.Cursor, task_id:str, files_for_download:list):
         for tag in files_for_download:
-            self.cursor.execute("""
+            cursor.execute("""
                 INSERT INTO files_paths (ID, file_path)
                 VALUES (?, ?);
             """, (task_id, tag))
@@ -175,22 +176,34 @@ class TasksDbInterface:
         if server_arguments is None:
             server_arguments = ''
 
-        self._insert_into_tasks_table(
-            task_id, 
-            host, 
-            port, 
-            selection_criteria, 
-            server_arguments, 
-            client_arguments, 
-            username, 
-            password)
-        
-        self._insert_into_files_paths_table(task_id, files_paths)
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
 
-        if tags:
-            self._insert_into_tags_table(task_id, tags)
+        try:
+            self._insert_into_tasks_table(
+                cursor,
+                task_id, 
+                host, 
+                port, 
+                selection_criteria, 
+                server_arguments, 
+                client_arguments, 
+                username, 
+                password)
+            
+            self._insert_into_files_paths_table(cursor, task_id, files_paths)
+
+            if tags:
+                self._insert_into_tags_table(cursor, task_id, tags)
+
+            connection.commit()
+
+        except Exception as e:
+            connection.close()
+            raise e
         
-        self.connection.commit()
+        connection.close()
+        
         print(f"Task {task_id} inserted successfully.")
 
     def set_task_running(self, task_id:str):
@@ -208,12 +221,24 @@ class TasksDbInterface:
             raise TaskNotRegistered(task_id)
         
         last_mod_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.cursor.execute("""
-            UPDATE tasks
-            SET running = TRUE, last_mod_date = ?
-            WHERE ID = ?;
-        """, (last_mod_date, task_id))
-        self.connection.commit()
+        
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        try:
+            cursor.execute("""
+                UPDATE tasks
+                SET running = TRUE, last_mod_date = ?
+                WHERE ID = ?;
+            """, (last_mod_date, task_id))
+
+            connection.commit()
+        
+        except Exception as e:
+            connection.close()
+            raise e
+        
+        connection.close()
+
         print(f"Task {task_id} is now set to running.")
 
     def set_task_not_running(self, task_id:str):
@@ -231,15 +256,27 @@ class TasksDbInterface:
             raise TaskNotRegistered(task_id)
         
         last_mod_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.cursor.execute("""
-            UPDATE tasks
-            SET running = FALSE, last_mod_date = ?
-            WHERE ID = ?;
-        """, (last_mod_date, task_id))
-        self.connection.commit()
+        
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        
+        try:
+            cursor.execute("""
+                UPDATE tasks
+                SET running = FALSE, last_mod_date = ?
+                WHERE ID = ?;
+            """, (last_mod_date, task_id))
+    
+            connection.commit()
 
-    def _select_from_tasks_table(self, task_id:str) -> list:
-        self.cursor.execute("""
+        except Exception as e:
+            connection.close()
+            raise e
+
+        connection.close()
+
+    def _select_from_tasks_table(self, cursor:sqlite3.Cursor, task_id:str) -> list:
+        cursor.execute("""
             SELECT 
                 creation_date, 
                 last_mod_date, 
@@ -255,23 +292,23 @@ class TasksDbInterface:
             FROM tasks
             WHERE ID = ?;
         """, (task_id,))
-        return self.cursor.fetchone()
+        return cursor.fetchone()
     
-    def _select_from_tags_table(self, task_id:str) -> list:
-        self.cursor.execute("""
+    def _select_from_tags_table(self, cursor:sqlite3.Cursor, task_id:str) -> list:
+        cursor.execute("""
             SELECT tag
             FROM tags
             WHERE ID = ?;
         """, (task_id,))
-        return [row[0] for row in self.cursor.fetchall()]
+        return [row[0] for row in cursor.fetchall()]
     
-    def _select_from_files_paths_table(self, task_id:str) -> list:
-        self.cursor.execute("""
+    def _select_from_files_paths_table(self, cursor:sqlite3.Cursor, task_id:str) -> list:
+        cursor.execute("""
             SELECT file_path
             FROM files_paths
             WHERE ID = ?;
         """, (task_id,))
-        return [row[0] for row in self.cursor.fetchall()]
+        return [row[0] for row in cursor.fetchall()]
 
     def query_task(self, task_id:str)->dict:
         """
@@ -287,14 +324,24 @@ class TasksDbInterface:
 
         :raises: TaskNotRegistered
         """    
-        task = self._select_from_tasks_table(task_id)
-        if not task:
-            raise TaskNotRegistered(task_id)
-            
-        files_paths = self._select_from_files_paths_table(task_id)
-            
-        tags = self._select_from_tags_table(task_id)
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+
+        try:
+            task = self._select_from_tasks_table(cursor, task_id)
+            if not task:
+                raise TaskNotRegistered(task_id)
+                
+            files_paths = self._select_from_files_paths_table(cursor, task_id)
+                
+            tags = self._select_from_tags_table(cursor, task_id)
         
+        except Exception as e:
+            connection.close()
+            raise e
+
+        connection.close()
+
         return {
             "creation_date": task[0],
             "last_mod_date": task[1],
@@ -318,13 +365,22 @@ class TasksDbInterface:
         :return: A dictionary where keys are task IDs and values are selection criteria.
         :rtype: dict
         """
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
 
-        self.cursor.execute("""
-            SELECT ID, selection_criteria
-            FROM tasks WHERE running == TRUE;
-        """)
-        rows = self.cursor.fetchall()
-        
+        try:
+            cursor.execute("""
+                SELECT ID, selection_criteria
+                FROM tasks WHERE running == TRUE;
+            """)
+            rows = cursor.fetchall()
+
+        except Exception as e:
+            connection.close()
+            raise e 
+
+        connection.close()
+
         task_map = {row[0]: row[1] for row in rows}
         return task_map
 
@@ -427,16 +483,18 @@ class TasksDbInterface:
             WHERE ID = ?;
         """
         
-        self.cursor.execute(sql_query, values)
-        self.connection.commit()
-        print(f"Task {task_id} updated successfully.")
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
 
-    def close(self):
-        """
-        Close the database connection
-        """
-        if self.connection:
-            self.connection.close()
+        try:
+            cursor.execute(sql_query, values)
+            connection.commit()
+        except Exception as e:
+            connection.close()
+            raise e
+
+        connection.close()
+        print(f"Task {task_id} updated successfully.")
 
 if __name__ == "__main__":
     db_interface = TasksDbInterface(str(Path().resolve()))
@@ -456,4 +514,3 @@ if __name__ == "__main__":
     db_interface.set_task_running("1a2b")
     task_map = db_interface.get_task_selection_criteria_map()
     pprint(task_map)
-    db_interface.close()
