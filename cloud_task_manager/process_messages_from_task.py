@@ -4,9 +4,7 @@ from task_daemon_lib.trigger import Trigger
 from typing import Callable
 from pprint import pprint
  
-# will be used by service_cloud_ml for receiving messages
-# from Flower subprocesses for updating task database 
-class StubForwardMessagesFromTask:
+class ForwardMessagesFromTask:
     """
     Handles messages received from subprocess using task listener from FTDL
 

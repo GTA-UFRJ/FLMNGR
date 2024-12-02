@@ -13,8 +13,8 @@ class BaseService:
     Other services are built as child of this one
     Implements registration and queue management for RabbitMQ
     """
-    def __init__(self) -> None:
-        self._is_running = False
+    def __init__(self, hide_error_info:bool=False) -> None:
+        self.hide_error_info = hide_error_info
         self.func_name_to_func_and_schema_map = {}
 
     def add_api_endpoint(self, func_name:str, schema: Dict[str, Any], func: Any):
@@ -73,27 +73,29 @@ class BaseService:
         
         try:
             func_and_schema = self.func_name_to_func_and_schema_map[func_name]
-            jsonschema.validate(instance=rcv_data, schema=func_and_schema.get("schema"))
+            if func_and_schema.get("schema") is not None:
+                jsonschema.validate(instance=rcv_data, schema=func_and_schema.get("schema"))
             response = self._try_exec_child_func_and_build_response(func_and_schema.get("func"), rcv_data)
         
         except KeyError as e:
             response = {
                 'status_code': 500,
-                'exception': f"Invalid RPC function: {e}"
+                'exception': f"Invalid RPC function"
             }
 
         except jsonschema.ValidationError as e: 
             response = {
                 'status_code': 400,
-                'exception': f"Invalid message: {e}"
+                'exception': f"Invalid arguments: {e}"
             }
         
         except Exception as e:
-            response = {
-                'status_code': 500,
-                'exception': f"An unknown error occured: {e}"
-            }
-        
+            if self.hide_error_info:
+                response = {'status_code': 500,'exception': "Internal error"}
+            else:
+                response = {'status_code': 500,'exception': f"An unknown error occured: {e}"}
+
+
         print(f"Response: {response}")
         return json.dumps(response)
 
@@ -102,7 +104,10 @@ class BaseService:
             returned = func(argument)
             return {"status_code":200,"return":returned}
         except Exception as e:
-            return {"status_code":500,"exception":f"{e}"}
+            if self.hide_error_info:
+                return {"status_code":500,"exception":"Internal error"}
+            else:
+                return {"status_code":500,"exception":f"{e}"}
 
     def _send_response(
         self, 
@@ -127,6 +132,7 @@ class BaseService:
             on_open_callback=self._on_open
         )
 
+        print("Starting service...")
         if background:
             service_thread = threading.Thread(target=self.connection.ioloop.start)
             service_thread.start()
@@ -134,5 +140,4 @@ class BaseService:
             self.connection.ioloop.start()
 
     def stop(self):
-        if not self.connection.is_closed:
-            self.connection.close()
+        self.connection.close()

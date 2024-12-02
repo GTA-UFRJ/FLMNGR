@@ -3,6 +3,7 @@ class InvalidSelCrit(Exception):
     def __init__(self, expression:str, e:Exception):
         super().__init__(f"Expression '{expression}' is invalid: {e}")
 
+# UNSAFE
 def eval_select_crit_expression(expression:str, info:dict) -> bool:
     """
     Verifies if a client matches the criteria for the task

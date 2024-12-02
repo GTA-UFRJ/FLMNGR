@@ -1,25 +1,73 @@
 from cloud_ml import CloudML
-from process_messages_from_task import StubForwardMessagesFromTask
+from process_messages_from_task import ForwardMessagesFromTask
 from task_daemon_lib.task_exceptions import TaskAlredyStopped
 from tasks_db_interface import TasksDbInterface
 from criteria_evaluation_engine import *
+from microservice_interconnect.base_service import BaseService
+from microservice_interconnect.rpc_client import rpc_send
+from pathlib import Path
+import os
+import json
 
-class StubServiceCloudML:
+class ServiceCloudML(BaseService):
     """
-    Main class for Cloud Task Manager microservice
-    This is a stub that executes the methods for starting/stopping a task at server side,
-    but they are not yet connected to the RabbitMQ RPC system  
+    Main class for Cloud Task Manager microservice that executes the methods for starting/stopping a task at server side
 
     :param workpath: project location, within which "tasks" dir resides
     :type workpath: str
     """
-    def __init__(
-        self,
-        workpath:str) -> None:
-        
+    def __init__(self, workpath:str) -> None:
+        super().__init__()
         self.workpath = workpath
         self.cloud_ml_backend = CloudML(workpath)
         self.db_handler = TasksDbInterface(workpath)
+
+        self.add_api_endpoint(
+            func=self.rpc_exec_create_task,
+            func_name="rpc_exec_create_task",
+            schema=self._get_schema("rpc_exec_create_task")
+        )
+
+        self.add_api_endpoint(
+            func=self.rpc_exec_start_server_task,
+            func_name="rpc_exec_start_server_task",
+            schema=self._get_schema("rpc_exec_start_server_task")
+        )
+
+        self.add_api_endpoint(
+            func=self.rpc_exec_stop_server_task,
+            func_name="rpc_exec_stop_server_task",
+            schema=self._get_schema("rpc_exec_stop_server_task")
+        )
+
+        self.add_api_endpoint(
+            func=self.rpc_exec_client_requesting_task,
+            func_name="rpc_exec_client_requesting_task",
+            schema=self._get_schema("rpc_exec_client_requesting_task")
+        )
+
+        self.add_api_endpoint(
+            func=self.rpc_exec_update_task,
+            func_name="rpc_exec_update_task",
+            schema=self._get_schema("rpc_exec_update_task")
+        )
+
+    def _get_schema(self, func_name:str)->dict:
+        """
+        Read JSON schema from file
+
+        :param func_name: JSON message name
+        :type func_name: str
+
+        :return: JSON
+        :rtype: dict
+
+        :raises: OSError
+
+        :raises: json.JSONDecodeError
+        """
+        with open(os.path.join(self.workpath,"schemas",f"{func_name}.json")) as f:
+            return json.load(f)
 
     def handle_error_from_task(self, task_id:str):
         """
@@ -84,7 +132,7 @@ class StubServiceCloudML:
             except Exception as e:
                 print(e)
                 raise e
-        forwarder = StubForwardMessagesFromTask(
+        forwarder = ForwardMessagesFromTask(
             received['task_id'],
             self.handle_error_from_task,
             finish_task,
@@ -203,12 +251,10 @@ class StubServiceCloudML:
         :returns: returned JSON from RPC with client info
         :rtype: dicts
         """
-        pass
-        """
-        rpc_client = RpcClient("query_client_info")
-        request = {"client_id":client_id}
-        response = rpc_client.call(request)
-        """
+        
+        # response = rpc_send("rpc_exec_query_client_info",{"client_id":client_id})
+        
+
         # Fake response. Should get from cloud client manager service DB using the code above
         return {
             "ID":"guilhermeeec",
@@ -218,3 +264,10 @@ class StubServiceCloudML:
             "has_camera":False,
             "has_gw_ecu":True
         }
+
+if __name__ == "__main__":
+    service = ServiceCloudML(str(Path().resolve()))
+    try:
+        service.start()
+    except KeyboardInterrupt as e:
+        service.stop()
