@@ -4,11 +4,10 @@ from pathlib import Path
 from task_files_downloader import download_task_training_files
 import os 
 from deepdiff import DeepDiff
-import pprint
 dir_path = os.path.dirname(os.path.realpath(__file__))
 print(f"Current dir: {dir_path}")
 
-class TestClientMLLogic:
+class TestStubClientMLLogic:
 
     def __init__(self, base_path) -> None:
         self.base_path = base_path
@@ -260,5 +259,5 @@ class TestClientMLLogic:
         self.service_client_ml.client_ml_backend.finish_all()
         
 if __name__ == "__main__":
-    tester = TestClientMLLogic(str(Path().resolve()))
+    tester = TestStubClientMLLogic(str(Path().resolve()))
     tester.perform_tests()

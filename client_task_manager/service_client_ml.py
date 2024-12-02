@@ -1,13 +1,16 @@
 from client_ml import ClientML
 from process_messages_from_client_task import ForwardMessagesFromClientTask
+from microservice_interconnect.rpc_client import rpc_send
 from task_daemon_lib.task_exceptions import TaskAlredyStopped
 from client_info_manager import ClientInfoManager
 from task_files_downloader import download_task_training_files
 import json
 import os
 from typing import Callable
+from pathlib import Path
+from time import sleep
 
-class StubServiceClientML:
+class ServiceClientML:
     """
     Main class for Client Task Manager microservice
     This is a stub that executes the methods for starting/stopping a task at server side,
@@ -75,6 +78,7 @@ class StubServiceClientML:
         while True:
             self._update_info_procedure()
             policy_function(self.current_tasks_list.copy())
+            sleep(10)
 
     def run_tasks_all_policy(self, tasks_list:list):
         raise NotImplementedError
@@ -92,6 +96,8 @@ class StubServiceClientML:
         
         candidates_tasks = [task for task in tasks_list 
                             if task not in self.problematic_tasks]
+        if len(candidates_tasks) == 0:
+            return
         selected_task_info = candidates_tasks[0]
         
         task_id = selected_task_info.get("ID") # We assume that the received task was alredy validated at RPC library
@@ -124,16 +130,13 @@ class StubServiceClientML:
             request = self.initial_client_info
 
         if request is None:
-            print("Nothing interesting to report...")
             return
 
-        """
-        rpc_client = RpcClient("send_client_stats")
-        response = rpc_client.call(request)
+        print("Reporting stats...")
+        #response = rpc_send("rpc_exec_update_client_stats",request)
         #if response.get("status") != 200:
         #    print(f"Error after sending client info: {response.get("exception")}")
-        
-        """
+
         # Fake processing for now
         print(f"Should send request {request} now")
 
@@ -145,25 +148,12 @@ class StubServiceClientML:
         :rtype: list
         """
         client_info = self.client_info_handler.get_info()
-        """
-        rpc_client = RpcClient("request_task")
-        response = rpc_client.call({"client_id":client_info.get('client_id')})
-        #if response.get("status") != 200:
-        #    print(f"Error after requesting task: {response.get("exception")}")
-        return response
-        """
-        response = [
-                {'ID': '4fe5', 
-                'host': 'localhost', 
-                'port': 8080, 
-                'tags': [], 
-                'client_arguments': None, 
-                'username': 'user', 
-                'password': '123', 
-                'files_paths': ['./task_4fe5/client.py', './task_4fe5/task.py']}
-            ]
-        print(f"Should receive {response} now")
-        return response
+        response = rpc_send("rpc_exec_client_requesting_task",{"client_id":client_info.get('ID')})
+        if response.get("status_code") != 200:
+            print(f"Error after requesting task: {response.get("exception")}")
+            return []
+        else:
+            return response.get("return")
     
     def handle_error_from_task(self, task_id:str):
         """
@@ -212,3 +202,14 @@ class StubServiceClientML:
             arguments
         )
 
+if __name__ == "__main__":
+    service = ServiceClientML(
+        str(Path().resolve()),
+        {
+            "ID":"guilhermeeec",
+            "data_qnt":0,
+            "avg_acc_contrib":None,
+            "avg_disconnection_per_round":None,
+            "has_camera":False,
+            "has_gw_ecu":True
+        })

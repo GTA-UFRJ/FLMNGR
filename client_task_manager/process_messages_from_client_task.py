@@ -4,7 +4,7 @@ from typing import Callable
  
 # will be used by service_client_ml for receiving messages
 # from Flower subprocesses for updating task database 
-class StubForwardMessagesFromClientTask:
+class ForwardMessagesFromClientTask:
     """
     Handles messages received from subprocess using task listener from FTDL
 

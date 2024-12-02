@@ -10,7 +10,7 @@ This microservice is responsible for:
 
 For more information about Flower Tasks Daemon Library (FTDL), read Cloud Task Manager README file
 
-### Test Client Task Manager service
+### Test Stub Client Task Manager service
 
 Client Task Manager is a component that receives messages through a RabbitMQ
 broker for RPC function execution. This broker logic is not yet implemented. 
@@ -19,4 +19,37 @@ and finished.
 
 ```
 python -m test_client_ml_logic
+```
+
+### Test Client Task Manager service
+
+For testing the service with RabbitMQ broker, run:
+
+```
+docker stop broker-rabbit
+docker rm broker-rabbit
+docker run -d --hostname broker --name broker-rabbit -p 5672:5672 rabbitmq:3
+cd ../cloud_task_manager
+python -m service_cloud_ml
+```
+
+In other terminal:
+```
+python host_tasks.py $(pwd)
+```
+
+In other terminal:
+```
+python -m create_and_run_server_task
+```
+
+In other terminal:
+```
+cd ../client_task_manager
+python -m service_client_ml
+```
+
+In other terminal:
+```
+python -m tasks.task_4fe5.client cli
 ```

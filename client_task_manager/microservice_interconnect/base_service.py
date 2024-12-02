@@ -80,20 +80,20 @@ class BaseService:
         except KeyError as e:
             response = {
                 'status_code': 500,
-                'exception': f"{func_name} is an invalid RPC function"
+                'exception': f"Invalid RPC function"
             }
 
         except jsonschema.ValidationError as e: 
             response = {
                 'status_code': 400,
-                'exception': f"{func_name} cannot be executed due to invalid arguments: {e}"
+                'exception': f"Invalid arguments: {e}"
             }
         
         except Exception as e:
             if self.hide_error_info:
-                response = {'status_code': 500,'exception': f"{func_name} Internal error"}
+                response = {'status_code': 500,'exception': "Internal error"}
             else:
-                response = {'status_code': 500,'exception': f"{func_name} An unknown error occured: {e}"}
+                response = {'status_code': 500,'exception': f"An unknown error occured: {e}"}
 
 
         print(f"Response: {response}")

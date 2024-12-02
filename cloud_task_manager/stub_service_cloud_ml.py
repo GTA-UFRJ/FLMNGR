@@ -1,5 +1,5 @@
 from cloud_ml import CloudML
-from process_messages_from_task import StubForwardMessagesFromTask
+from process_messages_from_task import ForwardMessagesFromTask
 from task_daemon_lib.task_exceptions import TaskAlredyStopped
 from tasks_db_interface import TasksDbInterface
 from criteria_evaluation_engine import *
@@ -84,7 +84,7 @@ class StubServiceCloudML:
             except Exception as e:
                 print(e)
                 raise e
-        forwarder = StubForwardMessagesFromTask(
+        forwarder = ForwardMessagesFromTask(
             received['task_id'],
             self.handle_error_from_task,
             finish_task,
