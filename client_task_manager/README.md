@@ -33,7 +33,7 @@ cd ../cloud_task_manager
 python -m service_cloud_ml
 ```
 
-In other terminal:
+In other terminal start download server:
 ```
 python host_tasks.py $(pwd)
 ```

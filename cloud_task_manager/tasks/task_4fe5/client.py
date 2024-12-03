@@ -22,15 +22,15 @@ class FlowerClient(NumPyClient):
 
 if __name__ == "__main__":
 
-    if sys.argv[1] != "cli":
-        task_reporter = TaskReporter()
-
-    net = Net().to(DEVICE)
-    
-    data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data'))
-    trainloader, testloader = load_data(data_path)
-
     try:
+        if sys.argv[1] != "cli":
+            task_reporter = TaskReporter()
+
+        net = Net().to(DEVICE)
+        
+        data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data'))
+        trainloader, testloader = load_data(data_path)
+
         if len(sys.argv) >= 3:
             if sys.argv[2] == "test-error":
                 raise Exception
@@ -38,11 +38,14 @@ if __name__ == "__main__":
         start_client(
             server_address="127.0.0.1:8080",
             client=FlowerClient().to_client(),
-        )
+        )    
+        
+        if sys.argv[1] != "cli":
+            task_reporter.send_info("Finished")
+    
     except Exception as e:
         print(f"Error! {e}")
         if sys.argv[1] == "cli":
             raise e
         task_reporter.send_error(e)
 
-    task_reporter.send_info("Finished")

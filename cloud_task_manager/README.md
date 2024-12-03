@@ -93,19 +93,19 @@ except Exception as e:
 ### Microservice interconnection library
 
 You must have Docker installed. For testing, run:
-```
+```shell
 docker stop broker-rabbit
 docker rm broker-rabbit
 docker run -d --hostname broker --name broker-rabbit -p 5672:5672 rabbitmq:3
 ```
 
 Now, run the microservice:
-```
+```shell
 python -m microservice_interconnect.sample_service
 ```
 
 Finally, in other terminal, run the tests:
-```
+```shell
 python -m microservice_interconnect.test_sample_service
 ```
 
@@ -116,7 +116,7 @@ broker for RPC function execution. This broker logic is not implemented in this 
 The responsability of this service is to manage server  tasks being started
 and finished. 
 
-```
+```shell
 python -m test_cloud_ml_logic
 ```
 
@@ -125,7 +125,7 @@ python -m test_cloud_ml_logic
 
 For testing the service with RabbitMQ broker, run:
 
-```
+```shell
 docker stop broker-rabbit
 docker rm broker-rabbit
 docker run -d --hostname broker --name broker-rabbit -p 5672:5672 rabbitmq:3

@@ -38,6 +38,9 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     if acc >= 0.5:
         task_reporter.trigger("trigger_example",str(acc))
 
+    #if acc <= 0.6 and comm_round == 10:
+    #    rpc_call("rpc_exec_start_tas", ...)
+
     # Aggregate and return custom metric (weighted average)
     return {
         "train_loss": sum(train_losses) / sum(examples),
@@ -60,14 +63,14 @@ def get_strategy():
 
 if __name__ == "__main__":
 
-    if sys.argv[1] != "cli":
-        task_reporter = TaskReporter()
-
-    comm_round = 1
-
-    config = ServerConfig(num_rounds=5)
-
     try:
+        if sys.argv[1] != "cli":
+            task_reporter = TaskReporter()
+
+        comm_round = 1
+
+        config = ServerConfig(num_rounds=5)
+
         if len(sys.argv) >= 3:
             if sys.argv[2] == "test-error":
                 raise Exception
@@ -77,10 +80,12 @@ if __name__ == "__main__":
             config=config,
             strategy=get_strategy(),
         )
+
+        if sys.argv[1] != "cli":
+            task_reporter.send_info("Finished")
+
     except Exception as e:
         if sys.argv[1] == "cli":
             raise e
         task_reporter.send_error(e)
 
-    if sys.argv[1] != "cli":
-        task_reporter.send_info("Finished")

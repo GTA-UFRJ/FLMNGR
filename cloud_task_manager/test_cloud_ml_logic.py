@@ -91,7 +91,7 @@ class TestCloudMLLogic:
              'files_paths':['./task_4fe5/client.py']})
         try:
             assert ret == {'status_code': 400, 
-                           'exception': "Invalid arguments: 'error' is not of type 'integer'\n\nFailed validating 'type' in schema['properties']['port']:\n    {'type': 'integer'}\n\nOn instance['port']:\n    'error'"}
+                           'exception': "rpc_exec_create_task cannot be executed due to invalid arguments: 'error' is not of type 'integer'\n\nFailed validating 'type' in schema['properties']['port']:\n    {'type': 'integer'}\n\nOn instance['port']:\n    'error'"}
             self.index += 1
         except:
             print(f"Test {self.index} failed: ", ret)
