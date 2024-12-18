@@ -3,7 +3,6 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime
 from pprint import pprint
-from werkzeug.security import check_password_hash, generate_password_hash
 
 class TaskNotRegistered(Exception):
     def __init__(self, task_id:str):

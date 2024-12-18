@@ -1,9 +1,6 @@
-from cloud_ml import CloudML
-from process_messages_from_task import ForwardMessagesFromTask
-from task_daemon_lib.task_exceptions import TaskAlredyStopped
-from tasks_db_interface import TasksDbInterface
-from criteria_evaluation_engine import *
+from user_db_interface import UserDbInterface
 from microservice_interconnect.base_service import BaseService
+from microservice_interconnect.rpc_client import rpc_send
 from pathlib import Path
 import os
 import json

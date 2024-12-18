@@ -117,7 +117,7 @@ The responsability of this service is to manage server  tasks being started
 and finished. 
 
 ```shell
-python -m test_cloud_ml_logic
+python -m test_stub_cloud_ml_logic
 ```
 
 
