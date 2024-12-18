@@ -260,8 +260,7 @@ class ServiceCloudML(BaseService):
             "data_qnt":323,
             "avg_acc_contrib":0.12,
             "avg_disconnection_per_round":0.44,
-            "has_camera":False,
-            "has_gw_ecu":True
+            "sensors":["camera","ecu"]
         }
 
 if __name__ == "__main__":

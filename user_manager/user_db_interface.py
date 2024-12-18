@@ -5,8 +5,8 @@ from datetime import datetime
 from pprint import pprint
 
 class UserNotRegistered(Exception):
-    def __init__(self, task_id:str):
-        super().__init__(f"User with ID={task_id} not registered")
+    def __init__(self, user_id:str):
+        super().__init__(f"User with ID={user_id} not registered")
 
 class UserDbInterface:
     """
@@ -94,12 +94,12 @@ class UserDbInterface:
 
     def insert_user(self, 
         user_id:str,
-        sensors:list,
+        sensors:list=[],
         data_qnt:int=0,
         avg_acc_contrib:float=None,
         avg_discon_per_round:float=None):
         """
-        Insert a new task into the stats table and optionally insert sensors
+        Insert a new user into the stats table and optionally insert sensors
         
         :param user_id: Unique identifier for the user (nickname).
         :type user_id: str
@@ -120,6 +120,11 @@ class UserDbInterface:
         """
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
+
+        if sensors is None:
+            sensors = []
+        if data_qnt is None:
+            data_qnt = 0
 
         try:
             self._insert_into_stats_table(cursor, user_id, data_qnt, avg_acc_contrib, avg_discon_per_round)
@@ -248,7 +253,8 @@ class UserDbInterface:
         data_qnt:int=None,
         avg_acc_contrib:float=None,
         avg_disconnection_per_round:float=None,
-        received_sensors:list=None
+        received_sensors:list=None,
+        insert_if_dont_exist:bool=True
         ):
         """
         Update an existing client with new attrbutes and sensors. Arguments with None are not updated.
@@ -268,16 +274,28 @@ class UserDbInterface:
         :param sensors: list of string with sensors names (strings). Can be empty
         :type sensors: list
 
+        :param insert_if_dont_exist: insert new user if it does not exist. Neve raises UserNotRegistered
+        :type insert_if_dont_exist: bool
+
         :raises: sqlite3.Error
 
-        :raises: TaskNotRegistered
+        :raises: UserNotRegistered
         """
         if not user_id:
             return
         
-        user_info = self.query_user(user_id)
-        if user_info is None:
-            raise UserNotRegistered(user_id)
+        try:
+            user_info = self.query_user(user_id)
+        except UserNotRegistered as e:
+            if insert_if_dont_exist:
+                self.insert_user(
+                    user_id,
+                    received_sensors,
+                    data_qnt,
+                    avg_acc_contrib,
+                    avg_disconnection_per_round)
+            else:
+                raise e
         
         update_stats_query, update_stats_values = self._build_sql_update_stats_query(
             user_id, 

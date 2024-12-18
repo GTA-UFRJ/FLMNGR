@@ -3,7 +3,6 @@
 
 This microservice is responsible for CRUD operation on user database
 
-
 ### Test User Manager service
 
 For testing the service with RabbitMQ broker, run:

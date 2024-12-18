@@ -210,6 +210,5 @@ if __name__ == "__main__":
             "data_qnt":0,
             "avg_acc_contrib":None,
             "avg_disconnection_per_round":None,
-            "has_camera":False,
-            "has_gw_ecu":True
+            "sensors":["camera","ecu"]
         })
