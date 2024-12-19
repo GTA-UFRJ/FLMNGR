@@ -3,19 +3,16 @@ import uuid
 import json
 
 
-def singleton(cls):
-    instances = {}
+class Singleton(type):
+    _instances = {}
 
-    def getinstance():
-        if cls not in instances:
-            instances[cls] = cls()
-        return instances[cls]
-
-    return getinstance
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
-@singleton
-class RpcClient:
+class RpcClient(metaclass=Singleton):
     """
     Implements an RPC client for microservices communication using a
     Pika connection to the channel
@@ -42,7 +39,7 @@ class RpcClient:
     def connect(self):
         # Reconnects whenever connection is closed
         if not self._connection or self._connection.is_closed:
-            self._connection = pika.BlockingConnection()
+            self._connection = pika.BlockingConnection(self._connection_params)
 
             self._channel = self._connection.channel()
 
