@@ -29,8 +29,8 @@ class WorkerThread(Thread):
                 continue
             method, _, body = message
             writeLock.acquire()
-            print(f"event received: {body}")
-            fd.write(f"\t{body},\n")
+            print(f"event received: {body.decode('utf-8')}")
+            fd.write(f"\t{body.decode('utf-8')},\n")
             writeLock.release()
             channel.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -39,11 +39,13 @@ if __name__ == "__main__":
     print("Starting consumers...")
     configs = configparser.ConfigParser()
     configs.read("./config.ini")
+
     a = WorkerThread(configs["server.broker"]["host"], configs["server.broker"]["port"])
     b = WorkerThread(configs["client.broker"]["host"], configs["client.broker"]["port"])
 
     a.start()
     b.start()
+
     try:
         print("Started consuming....")
         while True:
@@ -54,9 +56,10 @@ if __name__ == "__main__":
         b.stop()
     except Exception as err:
         print(f"Error: {str(err)}")
+        print("Stopping listener...")
         a.stop()
         b.stop()
 
-    # Saves file and closes the connection
+    print("Saving file")
     fd.write("]")
     fd.close()
