@@ -168,3 +168,7 @@ client_task_manager/tasks
 cloud_task_manager/db/*
 
 .vscode
+
+# events file created by the event_reader.py script 
+events.json
+
