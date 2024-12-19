@@ -4,9 +4,14 @@ from task_daemon_lib.task_exceptions import TaskAlredyStopped
 from tasks_db_interface import TasksDbInterface
 from criteria_evaluation_engine import *
 from microservice_interconnect.base_service import BaseService
+from microservice_interconnect.rpc_client import rpc_send
 from pathlib import Path
 import os
 import json
+
+class CouldNotRetrieveUser(Exception):
+    def __init__(self, user_id:str):
+        super().__init__(f"Could not retrieve info from user with ID={user_id}")
 
 class ServiceCloudML(BaseService):
     """
@@ -187,7 +192,10 @@ class ServiceCloudML(BaseService):
         :return: list with selected tasks information (ID, host, port, tags, ...)
         :rtype: list
         """
-        client_info = self.rpc_call_query_client_info(received['client_id'])
+        client_info = self.rpc_call_query_client_info(received['user_id'])
+        if client_info is None:
+            raise CouldNotRetrieveUser(received['user_id'])
+
         task_id_to_sel_crit_map = self.db_handler.get_task_selection_criteria_map()
         
         compatible_tasks_id_list = []
@@ -250,18 +258,11 @@ class ServiceCloudML(BaseService):
         :returns: returned JSON from RPC with client info
         :rtype: dicts
         """
-        
-        # response = rpc_send("rpc_exec_query_client_info",{"client_id":client_id})
-        
-
-        # Fake response. Should get from cloud client manager service DB using the code above
-        return {
-            "ID":"guilhermeeec",
-            "data_qnt":323,
-            "avg_acc_contrib":0.12,
-            "avg_disconnection_per_round":0.44,
-            "sensors":["camera","ecu"]
-        }
+        response = rpc_send("rpc_exec_get_user_info",{"user_id":client_id})
+        if response.get("status_code") != 200:
+            print(f"Failded to get user info: {response.get("exception")}")
+            return None
+        return response["return"]
 
 if __name__ == "__main__":
     service = ServiceCloudML(str(Path().resolve()))

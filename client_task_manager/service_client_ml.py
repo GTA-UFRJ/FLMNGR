@@ -41,7 +41,7 @@ class ServiceClientML:
         self.download_url = download_url
         self.tasks_path = os.path.join(workpath,"tasks")
 
-        self.client_info_handler = ClientInfoManager(workpath, id=client_info.get("ID"))
+        self.client_info_handler = ClientInfoManager(workpath, id=client_info.get("user_id"))
         self.initial_client_info = client_info
 
         self.client_info_handler.save_complete_info(client_info)
@@ -133,12 +133,11 @@ class ServiceClientML:
             return
 
         print("Reporting stats...")
-        #response = rpc_send("rpc_exec_update_client_stats",request)
-        #if response.get("status") != 200:
-        #    print(f"Error after sending client info: {response.get("exception")}")
-
-        # Fake processing for now
-        print(f"Should send request {request} now")
+        response = rpc_send("rpc_exec_update_user_info",request)
+        if response.get("status_code") != 200:
+            print(f"Error after sending client info: {response.get("exception")}")
+        else:
+            print(f"New info registered with success")
 
     def rpc_call_request_task(self) -> list:
         """
@@ -148,7 +147,7 @@ class ServiceClientML:
         :rtype: list
         """
         client_info = self.client_info_handler.get_info()
-        response = rpc_send("rpc_exec_client_requesting_task",{"client_id":client_info.get('ID')})
+        response = rpc_send("rpc_exec_client_requesting_task",{"user_id":client_info.get('user_id')})
         if response.get("status_code") != 200:
             print(f"Error after requesting task: {response.get("exception")}")
             return []
@@ -206,7 +205,7 @@ if __name__ == "__main__":
     service = ServiceClientML(
         str(Path().resolve()),
         {
-            "ID":"guilhermeeec",
+            "user_id":"guilhermeeec",
             "data_qnt":0,
             "avg_acc_contrib":None,
             "avg_disconnection_per_round":None,

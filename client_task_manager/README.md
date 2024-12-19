@@ -29,27 +29,31 @@ For testing the service with RabbitMQ broker, run:
 docker stop broker-rabbit
 docker rm broker-rabbit
 docker run -d --hostname broker --name broker-rabbit -p 5672:5672 rabbitmq:3
-cd ../cloud_task_manager
-python -m service_cloud_ml
-```
-
-In other terminal start download server:
-```
-python host_tasks.py $(pwd)
+cd ../user_manager
+python -m service_user_manager
 ```
 
 In other terminal:
 ```
+cd cloud_task_manager
+python -m service_cloud_ml
+```
+
+In other terminal:
+```
+cd cloud_task_manager
+python host_tasks.py $(pwd)
 python -m create_and_run_server_task
 ```
 
 In other terminal:
 ```
-cd ../client_task_manager
+cd client_task_manager
 python -m service_client_ml
 ```
 
 In other terminal:
 ```
+cd client_task_manager
 python -m tasks.task_4fe5.client cli
 ```

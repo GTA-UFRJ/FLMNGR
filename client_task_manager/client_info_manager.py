@@ -29,7 +29,8 @@ class ClientInfoManager:
         :raises: JSONDecodeError
         """
         with open(self.client_info_file_path,'r') as f:
-            return json.load(f)
+            complete_info = json.load(f)
+        return {k: v for k, v in complete_info.items() if v is not None}
     
     def get_info_if_changed(self)->dict:
         """

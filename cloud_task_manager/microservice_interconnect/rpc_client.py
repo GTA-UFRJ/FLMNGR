@@ -1,6 +1,7 @@
 import pika
 import uuid
 import json
+import time
 
 class RpcClient:
     """
@@ -11,7 +12,10 @@ class RpcClient:
         """
         Initializes RPC client with a destination queue
 
-        :param queue_name: destination function name
+        :param func_name: destination function name
+        :type func_name: str
+        
+        :raises: pika.exceptions.AMQPConnectionError
         """
         self.queue_name = func_name
 
@@ -51,8 +55,12 @@ class RpcClient:
         Sends a message to a microservice and waits for a response
 
         :param data: data to be sent to the microservice
+        :type data: dict
 
         :return: microservice response
+        :rtype: dict
+
+        :raises: pika.exceptions.AMQPConnectionError        
         """
         self.response = None
         self.corr_id = str(uuid.uuid4())
@@ -78,7 +86,26 @@ class RpcClient:
         self.connection.close()
 
 def rpc_send(func_name:str, request:dict)->dict:
-    rpc_client = RpcClient(func_name)
-    response = rpc_client.call(request)
-    rpc_client.close()
-    return response
+    """
+    Call endpoint function in another microservice
+    
+    :param func_name: function name. Usually starts with rpc_exec_... for preventing confusion
+    :type func_name: str
+
+    :param request: JSON request with function parameters following JSON schema
+    :type request: dict
+
+    :return: JSON response with status and return fields or status and exception fields
+    :rtype: dict 
+
+    :raises: pika.exceptions.AMQPConnectionError
+    """
+    while True: 
+        try:
+            rpc_client = RpcClient(func_name)
+            response = rpc_client.call(request)
+            rpc_client.close()
+            return response
+        except Exception as e:
+            print(f"Failed: {e}. Retry after 3 seconds...")
+            time.sleep(3)
