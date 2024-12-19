@@ -1,9 +1,40 @@
-# Cloud domain 
+# Cloud domain
 
+The cloud domain contains the following control elements
 
-It contains an HTTP API for general interaction with the application through its gateway and a Module chapter that contains the individual description and the python API documentation of each module.
+```{http:post} /api/v1/rpc_exec_create_task
+Creates a task 
+The post request must follow the JSON schema bellow: 
+```
 
-Below is an example of how a JSON schema is rendered using the sphinx-jsonschema extension:
+```{jsonschema} ../../../cloud_task_manager/schemas/rpc_exec_create_task.json
+```
 
-```{jsonschema} example.json
+```{http:post} /api/v1/rpc_exec_start_server_task
+
+Starts a task given an ID 
+
+:statuscode 200: Success
+:statuscode 500: Internal server error 
+
+The post request must follow the JSON schema bellow: 
+```
+
+```{jsonschema} ../../../cloud_task_manager/schemas/rpc_exec_start_server_task.json
+```
+
+```{http:post} /api/v1/rpc_exec_stop_server_task
+Stops a task 
+The post request must follow the JSON schema bellow: 
+```
+
+```{jsonschema} ../../../cloud_task_manager/schemas/rpc_exec_stop_server_task.json
+```
+
+```{http:post} /api/v1/rpc_exec_client_requesting_task
+Returns a list of tasks available to a client 
+The post request must follow the JSON schema bellow: 
+```
+
+```{jsonschema} ../../../cloud_task_manager/schemas/rpc_exec_client_requesting_task.json
 ```
