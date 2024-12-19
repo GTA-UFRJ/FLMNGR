@@ -282,7 +282,7 @@ class ServiceCloudML(BaseService):
 
 if __name__ == "__main__":
     configs = configparser.ConfigParser()
-    configs.read("./config.ini")
+    configs.read("../config.ini")
 
     host = configs["server.broker"]["host"]
     port = int(configs["server.broker"]["port"])
