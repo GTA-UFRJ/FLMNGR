@@ -1,14 +1,15 @@
-from client_ml import ClientML
-from process_messages_from_client_task import ForwardMessagesFromClientTask
+from client_task_manager.client_ml import ClientML
+from client_task_manager.process_messages_from_client_task import ForwardMessagesFromClientTask
 from microservice_interconnect.rpc_client import rpc_send
 from task_daemon_lib.task_exceptions import TaskAlredyStopped
-from client_info_manager import ClientInfoManager
-from task_files_downloader import download_task_training_files
+from client_task_manager.client_info_manager import ClientInfoManager
+from client_task_manager.task_files_downloader import download_task_training_files
 import json
 import os
 from typing import Callable
 from pathlib import Path
 from time import sleep
+import configparser
 
 class ServiceClientML:
     """
@@ -16,7 +17,7 @@ class ServiceClientML:
     This is a stub that executes the methods for starting/stopping a task at server side,
     but they are not yet connected to the RabbitMQ RPC system  
 
-    :param workpath: project location, within which "tasks" dir resides
+    :param workpath: project location, within which "tasks" and "client_info" directories reside
     :type workpath: str
 
     :param client_info: JSON with client basic info
@@ -34,7 +35,12 @@ class ServiceClientML:
         client_info:dict,
         autorun:bool=True,
         policy:str="one",
-        download_url:str="http://127.0.0.1:5000") -> None:
+        download_url:str="http://127.0.0.1:5000",
+        client_broker_host="localhost",
+        client_broker_port=5672) -> None:
+
+        self.broker_host = client_broker_host
+        self.broker_port = client_broker_port
 
         self.client_ml_backend = ClientML(workpath)
 
@@ -148,7 +154,11 @@ class ServiceClientML:
         :rtype: list
         """
         client_info = self.client_info_handler.get_info()
-        response = rpc_send("rpc_exec_client_requesting_task",{"client_id":client_info.get('ID')})
+        response = rpc_send(
+            "rpc_exec_client_requesting_task",
+            {"client_id":client_info.get('ID')},
+            host=self.broker_host,
+            port=self.broker_port)
         if response.get("status_code") != 200:
             print(f"Error after requesting task: {response.get("exception")}")
             return []
@@ -203,12 +213,19 @@ class ServiceClientML:
         )
 
 if __name__ == "__main__":
+
+    configs = configparser.ConfigParser()
+    configs.read("config.ini")
+
     service = ServiceClientML(
-        str(Path().resolve()),
+        os.path.join(Path().resolve(),"client_task_manager"),
         {
             "ID":"guilhermeeec",
             "data_qnt":0,
             "avg_acc_contrib":None,
             "avg_disconnection_per_round":None,
             "sensors":["camera","ecu"]
-        })
+        },
+        client_broker_host=configs["client.broker"]["host"],
+        client_broker_port=configs["client.broker"]["port"],
+    )

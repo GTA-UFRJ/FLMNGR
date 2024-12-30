@@ -31,7 +31,7 @@ def rpc_handler(function_name):
 
     except Exception as e:
         # Handle unexpected errors gracefully
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"status_code": 500, "exception": str(e)}), 500
 
 
 if __name__ == "__main__":

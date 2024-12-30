@@ -43,7 +43,7 @@ def download_task_training_files(
     :param task_id: task ID 
     :type task_id: str
 
-    :param work_path: path for client tasks dir, inside of which directories will be created for each task 
+    :param work_path: path for client "tasks" dir, inside of which directories will be created for each task 
     :type work_path: str
 
     :param username: username used to download file

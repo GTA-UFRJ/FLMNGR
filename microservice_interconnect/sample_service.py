@@ -4,8 +4,8 @@ from microservice_interconnect.base_service import BaseService
 from pathlib import Path
 
 class SampleService(BaseService):
-    def __init__(self, work_path:str):
-        super().__init__()
+    def __init__(self, work_path:str, broker_host:str, broker_port:int):
+        super().__init__(broker_host=broker_host, broker_port=broker_port)
         print(f"work path: {work_path}")
 
         self.add_api_endpoint(
@@ -32,5 +32,5 @@ class SampleService(BaseService):
 
 if __name__ == "__main__":
     print("Starting microservice")
-    service = SampleService(str(Path().resolve()))
+    service = SampleService(str(Path().resolve()), "localhost", 5000)
     service.start()

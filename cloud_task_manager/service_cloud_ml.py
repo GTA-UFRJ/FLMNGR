@@ -4,14 +4,13 @@ import time as tm
 import configparser
 from pathlib import Path
 
-from cloud_ml import CloudML
-from criteria_evaluation_engine import *
-from tasks_db_interface import TasksDbInterface
+from cloud_task_manager.cloud_ml import CloudML
+from cloud_task_manager.criteria_evaluation_engine import *
+from cloud_task_manager.tasks_db_interface import TasksDbInterface
 from microservice_interconnect.rpc_client import rpc_send
 from task_daemon_lib.task_exceptions import TaskAlredyStopped
 from microservice_interconnect.base_service import BaseService
-from process_messages_from_task import ForwardMessagesFromTask
-
+from cloud_task_manager.process_messages_from_task import ForwardMessagesFromTask
 
 class ServiceCloudML(BaseService):
     """
@@ -21,8 +20,14 @@ class ServiceCloudML(BaseService):
     :type workpath: str
     """
 
-    def __init__(self, workpath: str) -> None:
-        super().__init__()
+    def __init__(
+            self, 
+            workpath: str, 
+            broker_host:str="localhsot",
+            broker_port:str=5672) -> None:
+        super().__init__(broker_host=broker_host, broker_port=broker_port)
+        self.broker_host = broker_host
+        self.broker_port
         self.workpath = workpath
         self.cloud_ml_backend = CloudML(workpath)
         self.db_handler = TasksDbInterface(workpath)
@@ -131,16 +136,17 @@ class ServiceCloudML(BaseService):
 
         :raises: TaskNotRegistered
         """
-        rpc_send(
-            "events",
-            {
-                "time": tm.time(),
-                "domain": "cloud",
-                "service": "service_cloud_ml.py",
-                "function": "rpc_exec_start_server_task",
-                "event": "Initialization",
-            },
-        )
+        if register_events:
+            rpc_send(
+                "events",
+                {
+                    "time": tm.time(),
+                    "domain": "cloud",
+                    "service": "service_cloud_ml.py",
+                    "function": "rpc_exec_start_server_task",
+                    "event": "Initialization",
+                },
+            )
 
         def finish_task(task_id: str):
             try:
@@ -279,27 +285,31 @@ class ServiceCloudML(BaseService):
             "sensors": ["camera", "ecu"],
         }
 
-
 if __name__ == "__main__":
     configs = configparser.ConfigParser()
-    configs.read("../config.ini")
+    configs.read("config.ini")
 
     host = configs["server.broker"]["host"]
     port = int(configs["server.broker"]["port"])
+    register_events = configs.getboolean("events","register_events")
 
-    rpc_send(
-        "events",
-        {
-            "time": tm.time(),
-            "domain": "cloud",
-            "service": "service_cloud_ml.py",
-            "function": "",
-            "event": "Service initialization",
-        },
-        host,
-        port,
-    )
-    service = ServiceCloudML(str(Path().resolve()))
+    if register_events:
+        rpc_send(
+            "events",
+            {
+                "time": tm.time(),
+                "domain": "cloud",
+                "service": "service_cloud_ml.py",
+                "function": "",
+                "event": "Service initialization",
+            },
+            host,
+            port,
+        )
+    service = ServiceCloudML(
+        os.path.join(Path().resolve(),"cloud_task_manager"), 
+        host, 
+        port)
     try:
         service.start()
     except KeyboardInterrupt as e:

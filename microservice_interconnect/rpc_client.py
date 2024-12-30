@@ -18,13 +18,12 @@ class RpcClient(metaclass=Singleton):
     Pika connection to the channel
     """
 
-    def __init__(self, func_name: str, host="localhost", port=5672) -> None:
+    def __init__(self, host="localhost", port=5672) -> None:
         """
         Initializes RPC client with a destination queue
 
         :param queue_name: destination function name
         """
-        self.queue_name = func_name
 
         self._connection_params = pika.ConnectionParameters(host=host, port=port)
         self._connection = None
@@ -90,7 +89,7 @@ class RpcClient(metaclass=Singleton):
         """
         try:
             self._publish(data, properties)
-        except pika.exceptions.ConnectionClosed:
+        except Exception as e:
             self.connect()
             self._publish(data, properties)
 
@@ -125,11 +124,13 @@ class RpcClient(metaclass=Singleton):
 
 
 def publish_event(data, host="localhost", port=5672):
-    rpc_client = RpcClient("events", host, port)
+    rpc_client = RpcClient(host, port)
+    rpc_client.queue_name = "events"
     rpc_client.publish(data)
 
 
 def rpc_send(func_name: str, request: dict, host="localhost", port=5672) -> dict:
-    rpc_client = RpcClient(func_name, host, port)
+    rpc_client = RpcClient(host, port)
+    rpc_client.queue_name = func_name
     response = rpc_client.call(request)
     return response

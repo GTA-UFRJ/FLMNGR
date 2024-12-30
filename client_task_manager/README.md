@@ -1,5 +1,5 @@
 
-# Cloud Task Manager
+# Client Task Manager
 
 This microservice is responsible for:
 * Periodically providing local client statistics for the cloud
@@ -10,46 +10,46 @@ This microservice is responsible for:
 
 For more information about Flower Tasks Daemon Library (FTDL), read Cloud Task Manager README file
 
-### Test Stub Client Task Manager service
-
-Client Task Manager is a component that receives messages through a RabbitMQ
-broker for RPC function execution. This broker logic is not yet implemented. 
-The responsability of this service is to manage client tasks being started
-and finished. 
-
-```
-python -m test_client_ml_logic
-```
-
 ### Test Client Task Manager service
 
 For testing the service with RabbitMQ broker, run:
 
 ```
-docker stop broker-rabbit
-docker rm broker-rabbit
-docker run -d --hostname broker --name broker-rabbit -p 5672:5672 rabbitmq:3
-cd ../cloud_task_manager
-python -m service_cloud_ml
+docker stop server-broker-rabbit
+docker rm server-broker-rabbit
+docker run -d --hostname broker --name server-broker-rabbit -p 9000:5672 rabbitmq:3
+docker stop client-broker-rabbit
+docker rm client-broker-rabbit
+docker run -d --hostname broker --name client-broker-rabbit -p 8000:5672 rabbitmq:3
+python -m cloud_task_manager.service_cloud_ml
+```
+
+In other terminal start client gateway:
+```
+python client_gateway.amqp_gateway
+```
+
+In other terminal start cloud gateway:
+```
+python cloud_gateway.http_gateway
 ```
 
 In other terminal start download server:
 ```
-python host_tasks.py $(pwd)
+python cloud_task_manager.host_tasks.py $(pwd)
 ```
 
 In other terminal:
 ```
-python -m create_and_run_server_task
+python -m cloud_task_manager.create_and_run_server_task
 ```
 
 In other terminal:
 ```
-cd ../client_task_manager
-python -m service_client_ml
+python -m client_task_manager.service_client_ml
 ```
 
 In other terminal:
 ```
-python -m tasks.task_4fe5.client cli
+python -m cloud_task_manager.tasks.task_4fe5.client cli
 ```
