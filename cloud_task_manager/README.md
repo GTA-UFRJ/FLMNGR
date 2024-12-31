@@ -28,8 +28,8 @@ python -m cloud_task_manager.tasks.task_4fe5.client cli
 For testing the service with RabbitMQ broker, run:
 
 ```shell
-docker stop broker-rabbit
-docker rm broker-rabbit
-docker run -d --hostname broker --name broker-rabbit -p 9000:5672 rabbitmq:3
+docker stop server-broker-rabbit
+docker rm server-broker-rabbit
+docker run -d --hostname broker --name server-broker-rabbit -p 9000:5672 rabbitmq:3
 python -m cloud_task_manager.test_cloud_ml_logic
 ```

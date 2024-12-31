@@ -287,6 +287,7 @@ class UserDbInterface:
         try:
             user_info = self.query_user(user_id)
         except UserNotRegistered as e:
+            print("User do not exist")
             if insert_if_dont_exist:
                 self.insert_user(
                     user_id,
@@ -294,8 +295,9 @@ class UserDbInterface:
                     data_qnt,
                     avg_acc_contrib,
                     avg_disconnection_per_round)
+                return
             else:
-                raise e
+                raise UserNotRegistered(user_id)
         
         update_stats_query, update_stats_values = self._build_sql_update_stats_query(
             user_id, 

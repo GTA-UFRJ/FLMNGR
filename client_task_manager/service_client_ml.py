@@ -139,7 +139,8 @@ class ServiceClientML:
             return
 
         print("Reporting stats...")
-        response = rpc_send("rpc_exec_update_user_info",request)
+        response = rpc_send("rpc_exec_update_user_info",request,
+                            host=self.broker_host, port=self.broker_port)
         if response.get("status_code") != 200:
             print(f"Error after sending client info: {response.get("exception")}")
         else:
@@ -155,7 +156,7 @@ class ServiceClientML:
         client_info = self.client_info_handler.get_info()
         response = rpc_send(
             "rpc_exec_client_requesting_task",
-            {"client_id":client_info.get('ID')},
+            {"user_id":client_info.get('user_id')},
             host=self.broker_host,
             port=self.broker_port)
         if response.get("status_code") != 200:
@@ -225,6 +226,6 @@ if __name__ == "__main__":
             "avg_disconnection_per_round":None,
             "sensors":["camera","ecu"]
         },
-        client_broker_host=configs["client.broker"]["host"],
-        client_broker_port=configs["client.broker"]["port"],
+        client_broker_host=configs["server.broker"]["host"],
+        client_broker_port=configs["server.broker"]["port"],
     )

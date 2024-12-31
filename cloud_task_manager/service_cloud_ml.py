@@ -211,9 +211,19 @@ class ServiceCloudML(BaseService):
         :return: list with selected tasks information (ID, host, port, tags, ...)
         :rtype: list
         """
-        client_info = self.rpc_call_query_client_info(received['user_id'])
-        if client_info is None:
-            raise CouldNotRetrieveUser(received['user_id'])
+        if received['user_id'] == 'xxxx':
+            # Fake client, for tests
+            client_info = {
+                "ID": "guilhermeeec",
+                "data_qnt": 323,
+                "avg_acc_contrib": 0.12,
+                "avg_disconnection_per_round": 0.44,
+                "sensors": ["camera", "ecu"],
+            }
+        else:
+            client_info = self.rpc_call_query_client_info(received['user_id'])
+            if client_info is None:
+                raise CouldNotRetrieveUser(received['user_id'])
 
         task_id_to_sel_crit_map = self.db_handler.get_task_selection_criteria_map()
 
@@ -228,6 +238,7 @@ class ServiceCloudML(BaseService):
                     compatible_tasks_id_list.append(task_id)
             except InvalidSelCrit as e:
                 print(f"Problem checking compatibility with task {task_id}: {e}")
+                raise InvalidSelCrit
 
         task_att_sent_to_client = (
             "ID",
@@ -280,7 +291,8 @@ class ServiceCloudML(BaseService):
         :returns: returned JSON from RPC with client info
         :rtype: dicts
         """
-        response = rpc_send("rpc_exec_get_user_info",{"user_id":client_id})
+        response = rpc_send("rpc_exec_get_user_info",{"user_id":client_id},
+                            host=self.broker_host, port=self.broker_port)
         if response.get("status_code") != 200:
             print(f"Failded to get user info: {response.get("exception")}")
             return None

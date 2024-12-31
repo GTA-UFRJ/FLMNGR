@@ -1,8 +1,9 @@
-from user_db_interface import UserDbInterface, UserNotRegistered
+from user_manager.user_db_interface import UserDbInterface, UserNotRegistered
 from microservice_interconnect.base_service import BaseService
 from pathlib import Path
 import os
 import json
+import configparser
 
 class ServiceUserManager(BaseService):
     """
@@ -11,8 +12,12 @@ class ServiceUserManager(BaseService):
     :param workpath: project location, within which "tasks" dir resides
     :type workpath: str
     """
-    def __init__(self, workpath:str) -> None:
-        super().__init__()
+    def __init__(
+            self, 
+            workpath:str, 
+            client_broker_host="localhost",
+            client_broker_port=5672) -> None:
+        super().__init__(broker_host=client_broker_host, broker_port=client_broker_port)
         self.workpath = workpath
         self.db_handler = UserDbInterface(workpath)
 
@@ -78,7 +83,15 @@ class ServiceUserManager(BaseService):
         return self.db_handler.query_user(received["user_id"])
 
 if __name__ == "__main__":
-    service = ServiceUserManager(str(Path().resolve()))
+
+    configs = configparser.ConfigParser()
+    configs.read("config.ini")
+
+    service = ServiceUserManager(
+        os.path.join(Path().resolve(),"user_manager"),
+        client_broker_host=configs["server.broker"]["host"],
+        client_broker_port=configs["server.broker"]["port"],
+    )
     try:
         service.start()
     except KeyboardInterrupt as e:

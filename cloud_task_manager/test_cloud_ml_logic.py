@@ -51,7 +51,7 @@ class TestCloudMLLogic:
             {"task_id":"4fe5",
              'host':'localhost',
              'port':8080,
-             'selection_criteria':'(data_qnt > 50) and (has_camera == False)',
+             'selection_criteria':'(data_qnt > 50) and ("camera" in sensors)',
              'username':'user',
              'password':'123',
              'files_paths':['./task_4fe5/client.py','./task_4fe5/task.py']

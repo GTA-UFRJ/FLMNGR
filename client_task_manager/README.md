@@ -8,51 +8,26 @@ This microservice is responsible for:
 * Starting and stopping Flower training services at the client in real time
 * Logging Flower process information and errors (NOT YET IMPLEMENTED)
 
-For more information about Flower Tasks Daemon Library (FTDL), read Cloud Task Manager README file
-
 ### Test Client Task Manager service
 
 For testing the service with RabbitMQ broker, run:
 
 ```
-docker stop broker-rabbit
-docker rm broker-rabbit
-docker run -d --hostname broker --name broker-rabbit -p 5672:5672 rabbitmq:3
-cd ../cloud_task_manager
-python -m service_cloud_ml
+docker stop client_broker-rabbit
+docker rm client_broker-rabbit
+docker run -d --hostname broker --name client_broker-rabbit -p 8000:5672 rabbitmq:3
+python -m cloud_task_manager.service_cloud_ml
 ```
- """
-    Call endpoint function in another microservice
-    
-    :param func_name: function name. Usually starts with rpc_exec_... for preventing confusion
-    :type func_name: str
-
-    :param request: JSON request with function parameters following JSON schema
-    :type request: dict
-
-    :return: JSON response with status and return fields or status and exception fields
-    :rtype: dict 
-
-    :raises: pika.exceptions.AMQPConnectionError
-    """
-    while True: 
-        try:
-            rpc_client = RpcClient(func_name)
-            response = rpc_client.call(request)
-            rpc_client.close()
-            return response
-        except Exception as e:
-            print(f"Failed: {e}. Retry after 3 seconds...")
-            time.sleep(3)
 
 In other terminal start download server:
 ```
-python host_tasks.py $(pwd)
+python -m cloud_task_manager.host_tasks.py $(pwd)/cloud_task_manager
 ```
 
 In other terminal:
 ```
 python -m cloud_task_manager.create_and_run_server_task
+python -m user_manager.service_user_manager
 ```
 
 In other terminal:

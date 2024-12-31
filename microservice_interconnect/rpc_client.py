@@ -132,5 +132,7 @@ def publish_event(data, host="localhost", port=5672):
 def rpc_send(func_name: str, request: dict, host="localhost", port=5672) -> dict:
     rpc_client = RpcClient(host, port)
     rpc_client.queue_name = func_name
+    print(f"Sent {func_name} / {request}")
     response = rpc_client.call(request)
+    print(f"Received {response}")
     return response
