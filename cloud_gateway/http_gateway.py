@@ -8,8 +8,8 @@ app = Flask(__name__)
 configs = configparser.ConfigParser()
 configs.read("./config.ini")
 
-rpcHostname = configs["client.broker"]["host"]
-rpcPort = int(configs["client.broker"]["port"])
+rpcHostname = configs["server.broker"]["host"]
+rpcPort = int(configs["server.broker"]["port"])
 
 
 @app.route("/<function_name>", methods=["POST"])
@@ -26,8 +26,13 @@ def rpc_handler(function_name):
         # Extract the status code from the rpc_send response
         status_code = rpc_response.get("status_code", 500)
 
+        if status_code == 200:
+            response_data = rpc_response.get("return")
+        else:
+            response_data = rpc_response.get("exception")
+
         # Return the JSON response and the corresponding HTTP status code
-        return jsonify(rpc_response), status_code
+        return jsonify(response_data), status_code
 
     except Exception as e:
         # Handle unexpected errors gracefully

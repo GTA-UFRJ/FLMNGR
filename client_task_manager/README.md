@@ -10,32 +10,39 @@ This microservice is responsible for:
 
 ### Test Client Task Manager service
 
-For testing the service with RabbitMQ broker, run:
+For testing the service with RabbitMQ broker, run in different terminals:
 
-```
-docker stop client_broker-rabbit
-docker rm client_broker-rabbit
-docker run -d --hostname broker --name client_broker-rabbit -p 8000:5672 rabbitmq:3
+```shell
+docker stop server-broker-rabbit
+docker rm server-broker-rabbit
+docker run -d --hostname broker --name server-broker-rabbit -p 9000:5672 rabbitmq:3
 python -m cloud_task_manager.service_cloud_ml
 ```
 
-In other terminal start download server:
-```
-python -m cloud_task_manager.host_tasks.py $(pwd)/cloud_task_manager
+```shell
+python -m cloud_task_manager.create_and_run_server_task
+python -m cloud_task_manager.host_tasks $(pwd)/cloud_task_manager
 ```
 
-In other terminal:
+```shell
+python -m cloud_gateway.http_gateway
 ```
-python -m cloud_task_manager.create_and_run_server_task
+
+```shell
+docker stop client-broker-rabbit
+docker rm client-broker-rabbit
+docker run -d --hostname broker --name client-broker-rabbit -p 8000:5672 rabbitmq:3
 python -m user_manager.service_user_manager
 ```
 
-In other terminal:
+```shell
+python -m client_gateway.amqp_gateway
 ```
+
+```shell
 python -m client_task_manager.service_client_ml
 ```
 
-In other terminal:
-```
+```shell
 python -m cloud_task_manager.tasks.task_4fe5.client cli
 ```

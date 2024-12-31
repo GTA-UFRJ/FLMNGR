@@ -167,6 +167,7 @@ client_task_manager/client_info/*
 client_task_manager/tasks
 cloud_task_manager/db/*
 user_manager/db/*
+logs_*/*
 
 .vscode
 

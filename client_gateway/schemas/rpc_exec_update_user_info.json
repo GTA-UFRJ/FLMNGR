@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "data_qnt": {
+      "type": "integer"
+    },
+    "avg_acc_contrib": {
+      "type": "number"
+    },
+    "avg_disconnection_per_round": {
+      "type": "number"
+    },
+    "sensors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["user_id"],
+  "additionalProperties": false
+}

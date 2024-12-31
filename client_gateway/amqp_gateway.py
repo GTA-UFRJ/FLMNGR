@@ -18,18 +18,23 @@ class ServiceAmqpGateway(BaseService):
             workpath: str,  
             client_broker_host="localhost", 
             client_broker_port=5672,
-            cloud_broker_host="localhost", 
-            cloud_broker_port=5672) -> None:
-        super().__init__(client_broker_host, client_broker_port)
+            cloud_gateway_host="localhost", 
+            cloud_gateway_port=5672) -> None:
+        super().__init__(broker_host=client_broker_host, broker_port=client_broker_port)
 
         self.workpath = workpath
-        self.server_url = f"http://{cloud_broker_host}:{cloud_broker_port}"
-
+        self.server_url = f"http://{cloud_gateway_host}:{cloud_gateway_port}"
 
         self.add_api_endpoint(
             func=self.rpc_redirect_update_user_info,
             func_name="rpc_exec_update_user_info",
             schema=self._get_schema("rpc_exec_update_user_info")
+        )
+
+        self.add_api_endpoint(
+            func=self.rpc_redirect_client_requesting_task,
+            func_name="rpc_exec_client_requesting_task",
+            schema=self._get_schema("rpc_exec_client_requesting_task")
         )
 
     def _get_schema(self, func_name: str) -> dict:
@@ -44,7 +49,7 @@ class ServiceAmqpGateway(BaseService):
 
         :raises: OSError
 
-        :raises: json.JSONDecodeError
+        :raises: json.JSONDecodeErrorpc_exec_update_user_infor
         """
         with open(os.path.join(self.workpath, "schemas", f"{func_name}.json")) as f:
             return json.load(f)
@@ -54,8 +59,12 @@ class ServiceAmqpGateway(BaseService):
         Send JSON data to URL using HTTP and returns JSON response 
         """
         response = requests.post(url=url, json=data)
-        if response.status_code not in [200, 400, 500]:
+        if response.status_code == 200:
             return response.json()
+        elif response.status_code in [400,500]:
+            response_json = response.json()
+            response_json["exception"] = response_json.pop("return")
+            return response_json
         else:
             raise CloudOperationFailed(url)
 
@@ -63,7 +72,13 @@ class ServiceAmqpGateway(BaseService):
         url=f"{self.server_url}/rpc_exec_update_user_info"
 
         # Do not validate server response!
-        return self._redirect_json_to_url(url, dta=received)
+        return self._redirect_json_to_url(url, data=received)
+
+    def rpc_redirect_client_requesting_task(self, received:dict):
+        url=f"{self.server_url}/rpc_exec_client_requesting_task"
+
+        # Do not validate server response!
+        return self._redirect_json_to_url(url, data=received)
     
 if __name__ == "__main__":
 
@@ -71,11 +86,11 @@ if __name__ == "__main__":
     configs.read("./config.ini")
 
     service = ServiceAmqpGateway(
-        workpath=str(Path().resolve()),
+        workpath=os.path.join(Path().resolve(), "client_gateway"),
         client_broker_host=configs["client.broker"]["host"],
         client_broker_port=configs["client.broker"]["port"],
-        server_broker_host=configs["server.broker"]["host"],
-        server_broker_port=configs["server.broker"]["port"],
+        cloud_gateway_host=configs["server.broker"]["host"],
+        cloud_gateway_port=configs["server.gateway"]["port"],
     )
 
     try:

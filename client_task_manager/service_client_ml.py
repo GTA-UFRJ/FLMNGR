@@ -226,6 +226,6 @@ if __name__ == "__main__":
             "avg_disconnection_per_round":None,
             "sensors":["camera","ecu"]
         },
-        client_broker_host=configs["server.broker"]["host"],
-        client_broker_port=configs["server.broker"]["port"],
+        client_broker_host=configs["client.broker"]["host"],
+        client_broker_port=configs["client.broker"]["port"],
     )
