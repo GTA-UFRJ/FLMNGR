@@ -1,7 +1,7 @@
 import pika
 import uuid
 import json
-
+import time as tm
 
 class Singleton(type):
     _instances = {}
@@ -87,11 +87,14 @@ class RpcClient(metaclass=Singleton):
 
         :return: None
         """
-        try:
-            self._publish(data, properties)
-        except Exception as e:
-            self.connect()
-            self._publish(data, properties)
+        while True:
+            try:
+                self._publish(data, properties)
+                return
+            except Exception as e:
+                print(f"Failed: {e}. Retry after 3 seconds...")
+                tm.sleep(3)
+                self.connect()
 
     def call(self, data: dict) -> dict:
         """
@@ -136,3 +139,24 @@ def rpc_send(func_name: str, request: dict, host="localhost", port=5672) -> dict
     response = rpc_client.call(request)
     print(f"Received {response}")
     return response
+
+def register_event(
+        service_name:str, 
+        func_name:str, 
+        event_descr:str, 
+        allow_registering:bool=True,
+        host="localhost", 
+        port=5672
+    ):
+    
+    if allow_registering:
+        publish_event(
+            {
+                "time": tm.time(),
+                "service": service_name,
+                "function": func_name,
+                "event": event_descr,
+            },
+            host,
+            port,
+        )

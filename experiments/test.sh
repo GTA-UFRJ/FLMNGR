@@ -12,6 +12,10 @@ docker rm server-broker-rabbit
 docker run --hostname broker --name server-broker-rabbit -p 9000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/cloud_broker.log 2>&1 &
 sleep 5
 
+echo "Start event reader"
+python -u -m event_reader > logs_${LOG_TIMESTAMP}/event_reader.log 2>&1 &
+sleep 1
+
 echo "Start cloud gateway"
 python -u -m cloud_gateway.http_gateway > logs_${LOG_TIMESTAMP}/http_gateway.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids

@@ -1,13 +1,12 @@
 import os
 import json
-import time as tm
 import configparser
 from pathlib import Path
 
 from cloud_task_manager.cloud_ml import CloudML
 from cloud_task_manager.criteria_evaluation_engine import *
 from cloud_task_manager.tasks_db_interface import TasksDbInterface
-from microservice_interconnect.rpc_client import rpc_send
+from microservice_interconnect.rpc_client import rpc_send, register_event
 from task_daemon_lib.task_exceptions import TaskAlredyStopped
 from microservice_interconnect.base_service import BaseService
 from cloud_task_manager.process_messages_from_task import ForwardMessagesFromTask
@@ -31,7 +30,7 @@ class ServiceCloudML(BaseService):
             broker_port:str=5672) -> None:
         super().__init__(broker_host=broker_host, broker_port=broker_port)
         self.broker_host = broker_host
-        self.broker_port
+        self.broker_port = broker_port
         self.workpath = workpath
         self.cloud_ml_backend = CloudML(workpath)
         self.db_handler = TasksDbInterface(workpath)
@@ -65,6 +64,8 @@ class ServiceCloudML(BaseService):
             func_name="rpc_exec_update_task",
             schema=self._get_schema("rpc_exec_update_task"),
         )
+
+        register_event("service_cloud_ml","main","Started",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def _get_schema(self, func_name: str) -> dict:
         """
@@ -107,6 +108,8 @@ class ServiceCloudML(BaseService):
 
         :raises: sqlite3.IntegrityError
         """
+        register_event("service_cloud_ml","rpc_exec_create_task","Started task creation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         self.db_handler.insert_task(
             task_id=received["task_id"],
             host=received["host"],
@@ -119,6 +122,8 @@ class ServiceCloudML(BaseService):
             client_arguments=received.get("client_arguments"),
             tags=received.get("tags"),
         )
+
+        register_event("service_cloud_ml","rpc_exec_create_task","Finished task creation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def rpc_exec_start_server_task(self, received: dict):
         """
@@ -140,17 +145,7 @@ class ServiceCloudML(BaseService):
 
         :raises: TaskNotRegistered
         """
-        if register_events:
-            rpc_send(
-                "events",
-                {
-                    "time": tm.time(),
-                    "domain": "cloud",
-                    "service": "service_cloud_ml.py",
-                    "function": "rpc_exec_start_server_task",
-                    "event": "Initialization",
-                },
-            )
+        register_event("service_cloud_ml","rpc_exec_start_server_task","Started server task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         def finish_task(task_id: str):
             try:
@@ -181,6 +176,8 @@ class ServiceCloudML(BaseService):
         except Exception as e:
             self.db_handler.set_task_not_running(received["task_id"])
             raise e
+        
+        register_event("service_cloud_ml","rpc_exec_start_server_task","Finished server task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def rpc_exec_stop_server_task(self, received: dict):
         """
@@ -197,9 +194,13 @@ class ServiceCloudML(BaseService):
 
         :raises: TaskNotRegistered
         """
+        register_event("service_cloud_ml","rpc_exec_stop_server_task","Started server task finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         self.db_handler.set_task_not_running(received["task_id"])
 
         self.cloud_ml_backend.stop_task(received["task_id"])
+
+        register_event("service_cloud_ml","rpc_exec_stop_server_task","Finished server task finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def rpc_exec_client_requesting_task(self, received: dict) -> list:
         """
@@ -211,6 +212,8 @@ class ServiceCloudML(BaseService):
         :return: list with selected tasks information (ID, host, port, tags, ...)
         :rtype: list
         """
+        register_event("service_cloud_ml","rpc_exec_client_requesting_task","Started responding requested task to client",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         if received['user_id'] == 'xxxx':
             # Fake client, for tests
             client_info = {
@@ -256,6 +259,8 @@ class ServiceCloudML(BaseService):
             task_info_to_send = dict((k, task_info[k]) for k in task_att_sent_to_client)
             tasks_info_list.append(task_info_to_send)
 
+        register_event("service_cloud_ml","rpc_exec_client_requesting_task","Finished responding requested task to client",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         return tasks_info_list
 
     def rpc_exec_update_task(self, received: dict):
@@ -269,6 +274,8 @@ class ServiceCloudML(BaseService):
 
         :raises: TaskNotRegistered
         """
+        register_event("service_cloud_ml","rpc_exec_update_task","Started updating task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         self.db_handler.update_task(
             task_id=received.get("task_id"),
             host=received.get("host"),
@@ -281,6 +288,8 @@ class ServiceCloudML(BaseService):
             password=received.get("password"),
         )
 
+        register_event("service_cloud_ml","rpc_exec_update_task","Finished updating task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
     def rpc_call_query_client_info(self, client_id: str) -> dict:
         """
         Send an RPC message for client manager service with client ID requesting for its info
@@ -291,11 +300,16 @@ class ServiceCloudML(BaseService):
         :returns: returned JSON from RPC with client info
         :rtype: dicts
         """
+        register_event("service_cloud_ml","rpc_call_query_client_info","Started querying client info",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         response = rpc_send("rpc_exec_get_user_info",{"user_id":client_id},
                             host=self.broker_host, port=self.broker_port)
         if response.get("status_code") != 200:
             print(f"Failded to get user info: {response.get("exception")}")
             return None
+        
+        register_event("service_cloud_ml","rpc_call_query_client_info","Finished querying client info",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         return response["return"]
 
 if __name__ == "__main__":
@@ -304,21 +318,8 @@ if __name__ == "__main__":
 
     host = configs["server.broker"]["host"]
     port = int(configs["server.broker"]["port"])
-    register_events = configs.getboolean("events","register_events")
+    allow_register = configs.getboolean("events","register_events")
 
-    if register_events:
-        rpc_send(
-            "events",
-            {
-                "time": tm.time(),
-                "domain": "cloud",
-                "service": "service_cloud_ml.py",
-                "function": "",
-                "event": "Service initialization",
-            },
-            host,
-            port,
-        )
     service = ServiceCloudML(
         os.path.join(Path().resolve(),"cloud_task_manager"), 
         host, 

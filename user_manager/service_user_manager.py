@@ -1,5 +1,6 @@
 from user_manager.user_db_interface import UserDbInterface, UserNotRegistered
 from microservice_interconnect.base_service import BaseService
+from microservice_interconnect.rpc_client import register_event
 from pathlib import Path
 import os
 import json
@@ -15,11 +16,14 @@ class ServiceUserManager(BaseService):
     def __init__(
             self, 
             workpath:str, 
-            client_broker_host="localhost",
-            client_broker_port=5672) -> None:
-        super().__init__(broker_host=client_broker_host, broker_port=client_broker_port)
+            server_broker_host="localhost",
+            server_broker_port=5672) -> None:
+        super().__init__(broker_host=server_broker_host, broker_port=server_broker_port)
         self.workpath = workpath
         self.db_handler = UserDbInterface(workpath)
+
+        self.broker_host = server_broker_host
+        self.broker_port = server_broker_port
 
         self.add_api_endpoint(
             func=self.rpc_exec_update_user_info,
@@ -32,6 +36,8 @@ class ServiceUserManager(BaseService):
             func_name="rpc_exec_get_user_info",
             schema=self._get_schema("rpc_exec_get_user_info")
         )
+
+        register_event("service_user_manager","main","Started",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def _get_schema(self, func_name:str)->dict:
         """
@@ -59,6 +65,8 @@ class ServiceUserManager(BaseService):
 
         :raises: sqlite3.IntegrityError
         """
+        register_event("service_user_manager","rpc_exec_update_user_info","Started updating user info",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         self.db_handler.update_user(
             user_id=received["user_id"],
             data_qnt=received.get("data_qnt"),
@@ -67,6 +75,8 @@ class ServiceUserManager(BaseService):
             received_sensors=received.get("sensors"),
             insert_if_dont_exist=True
         )
+
+        register_event("service_user_manager","rpc_exec_update_user_info","Finished updating user info",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def rpc_exec_get_user_info(self, received:dict):
         """
@@ -80,17 +90,21 @@ class ServiceUserManager(BaseService):
 
         :raises: sqlite3.IntegrityError
         """
-        return self.db_handler.query_user(received["user_id"])
+        register_event("service_user_manager","rpc_exec_get_user_info","Started getting user info",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        user_info = self.db_handler.query_user(received["user_id"])
+        register_event("service_user_manager","rpc_exec_get_user_info","Finished getting user info",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        return user_info
 
 if __name__ == "__main__":
 
     configs = configparser.ConfigParser()
     configs.read("config.ini")
+    allow_register = configs.getboolean("events","register_events")
 
     service = ServiceUserManager(
         os.path.join(Path().resolve(),"user_manager"),
-        client_broker_host=configs["server.broker"]["host"],
-        client_broker_port=configs["server.broker"]["port"],
+        server_broker_host=configs["server.broker"]["host"],
+        server_broker_port=configs["server.broker"]["port"],
     )
     try:
         service.start()

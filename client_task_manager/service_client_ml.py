@@ -1,6 +1,6 @@
 from client_task_manager.client_ml import ClientML
 from client_task_manager.process_messages_from_client_task import ForwardMessagesFromClientTask
-from microservice_interconnect.rpc_client import rpc_send
+from microservice_interconnect.rpc_client import rpc_send, register_event
 from task_daemon_lib.task_exceptions import TaskAlredyStopped
 from client_task_manager.client_info_manager import ClientInfoManager
 from client_task_manager.task_files_downloader import download_task_training_files
@@ -64,6 +64,8 @@ class ServiceClientML:
             if policy_function is None:
                 print("Policy should be 'one' or 'all'. Default: one")
                 policy_function = self.run_task_one_policy
+        
+            register_event("service_client_ml","main","Started",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
     
             self._continuous_procedure(policy_function)
 
@@ -105,7 +107,9 @@ class ServiceClientML:
         if len(candidates_tasks) == 0:
             return
         selected_task_info = candidates_tasks[0]
-        
+
+        register_event("service_client_ml","run_task_one_policy","Started downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         task_id = selected_task_info.get("ID") # We assume that the received task was alredy validated at RPC library
         task_arguments = selected_task_info.get("arguments") # We assume that the received task was alredy validated at RPC library
         try:
@@ -121,6 +125,8 @@ class ServiceClientML:
             print(f"Exception occured while starting task {task_id}: {e}")
             self.problematic_tasks.append(selected_task_info)
             return
+        
+        register_event("service_client_ml","run_task_one_policy","Finished downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         self.start_client_task(task_id, task_arguments)
 
@@ -128,6 +134,8 @@ class ServiceClientML:
         """
         Get client info stored in client_info dir inside workpath and sends it to the server
         """
+        register_event("service_client_ml","rpc_call_send_client_stats","Started getting client stats for sending",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         try:
             request = self.client_info_handler.get_info_if_changed()
         except (FileNotFoundError, json.JSONDecodeError) as e:
@@ -146,6 +154,8 @@ class ServiceClientML:
         else:
             print(f"New info registered with success")
 
+        register_event("service_client_ml","rpc_call_send_client_stats","Finished getting client stats for sending",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
     def rpc_call_request_task(self) -> list:
         """
         Sends an RPC message to cloud task manager requesting compatible tasks
@@ -153,6 +163,8 @@ class ServiceClientML:
         :return: list of tasks info
         :rtype: list
         """
+        register_event("service_client_ml","rpc_call_request_task","Started requesting task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         client_info = self.client_info_handler.get_info()
         response = rpc_send(
             "rpc_exec_client_requesting_task",
@@ -163,6 +175,7 @@ class ServiceClientML:
             print(f"Error after requesting task: {response.get("exception")}")
             return []
         else:
+            register_event("service_client_ml","rpc_call_request_task","Finished requesting task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
             return response.get("return")
     
     def handle_error_from_task(self, task_id:str):
@@ -199,6 +212,7 @@ class ServiceClientML:
 
         :raises: PermissionError
         """
+        register_event("service_client_ml","start_client_task","Started client task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
         
         forwarder = ForwardMessagesFromClientTask(
             task_id,
@@ -212,10 +226,13 @@ class ServiceClientML:
             arguments
         )
 
+        register_event("service_client_ml","start_client_task","Finish client task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
 if __name__ == "__main__":
 
     configs = configparser.ConfigParser()
     configs.read("config.ini")
+    allow_register = configs.getboolean("events","register_events")
 
     service = ServiceClientML(
         os.path.join(Path().resolve(),"client_task_manager"),
