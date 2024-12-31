@@ -1,6 +1,6 @@
 from flask import Flask, request, send_from_directory, abort
 import os
-from tasks_db_interface import *
+from cloud_task_manager.tasks_db_interface import *
 from pathlib import Path
 import sys
 

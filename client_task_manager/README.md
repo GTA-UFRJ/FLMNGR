@@ -1,5 +1,5 @@
 
-# Cloud Task Manager
+# Client Task Manager
 
 This microservice is responsible for:
 * Periodically providing local client statistics for the cloud
@@ -10,17 +10,6 @@ This microservice is responsible for:
 
 For more information about Flower Tasks Daemon Library (FTDL), read Cloud Task Manager README file
 
-### Test Stub Client Task Manager service
-
-Client Task Manager is a component that receives messages through a RabbitMQ
-broker for RPC function execution. This broker logic is not yet implemented. 
-The responsability of this service is to manage client tasks being started
-and finished. 
-
-```
-python -m test_client_ml_logic
-```
-
 ### Test Client Task Manager service
 
 For testing the service with RabbitMQ broker, run:
@@ -29,31 +18,49 @@ For testing the service with RabbitMQ broker, run:
 docker stop broker-rabbit
 docker rm broker-rabbit
 docker run -d --hostname broker --name broker-rabbit -p 5672:5672 rabbitmq:3
-cd ../user_manager
-python -m service_user_manager
-```
-
-In other terminal:
-```
-cd cloud_task_manager
+cd ../cloud_task_manager
 python -m service_cloud_ml
 ```
+ """
+    Call endpoint function in another microservice
+    
+    :param func_name: function name. Usually starts with rpc_exec_... for preventing confusion
+    :type func_name: str
 
-In other terminal:
+    :param request: JSON request with function parameters following JSON schema
+    :type request: dict
+
+    :return: JSON response with status and return fields or status and exception fields
+    :rtype: dict 
+
+    :raises: pika.exceptions.AMQPConnectionError
+    """
+    while True: 
+        try:
+            rpc_client = RpcClient(func_name)
+            response = rpc_client.call(request)
+            rpc_client.close()
+            return response
+        except Exception as e:
+            print(f"Failed: {e}. Retry after 3 seconds...")
+            time.sleep(3)
+
+In other terminal start download server:
 ```
-cd cloud_task_manager
 python host_tasks.py $(pwd)
-python -m create_and_run_server_task
 ```
 
 In other terminal:
 ```
-cd client_task_manager
-python -m service_client_ml
+python -m cloud_task_manager.create_and_run_server_task
 ```
 
 In other terminal:
 ```
-cd client_task_manager
-python -m tasks.task_4fe5.client cli
+python -m client_task_manager.service_client_ml
+```
+
+In other terminal:
+```
+python -m cloud_task_manager.tasks.task_4fe5.client cli
 ```

@@ -2,6 +2,7 @@ from microservice_interconnect.rpc_client import rpc_send
 from time import sleep
 from pathlib import Path
 import os 
+import configparser
 dir_path = os.path.dirname(os.path.realpath(__file__))
 print(f"Current dir: {dir_path}")
 
@@ -12,15 +13,21 @@ class TestCloudMLLogic:
         if os.path.exists(db_path):
             os.remove(db_path)
 
+        configs = configparser.ConfigParser()
+        configs.read("./config.ini")
+        self.host = configs["server.broker"]["host"]
+        self.port = configs["server.broker"]["port"]
+
         print("In other terminal, run: ")
-        print("python -m service_cloud_ml")
+        print("python -m cloud_task_manager.service_cloud_ml")
         input("When ready, press enter...")
         print("------------------------------")
         self.index = 1
 
     def start_non_registered_task(self):
         print(f"{self.index} Try to start a task that was not registered")
-        ret = rpc_send("rpc_exec_start_server_task",{"task_id":"4fe5"})
+        ret = rpc_send("rpc_exec_start_server_task",{"task_id":"4fe5"},
+                       host=self.host, port=self.port)
         try:
             assert ret == {"status_code":500,"exception":"Task with ID=4fe5 not registered"}
             self.index += 1
@@ -179,7 +186,7 @@ class TestCloudMLLogic:
             print(f"Test {self.index}, part (1/3), failed: ", ret)
             exit()
         
-        ret = rpc_send("rpc_exec_client_requesting_task",{"client_id":"xxxx"})
+        ret = rpc_send("rpc_exec_client_requesting_task",{"user_id":"xxxx"})
         try: 
             assert ret == {'status_code': 200, 'return': 
                            [{'ID': '4fe5', 
@@ -217,7 +224,7 @@ class TestCloudMLLogic:
     def invalid_selection_crit(self):
         print(f"{self.index} Request tasks, but it has an invalid selection criteria")
         
-        ret = rpc_send("rpc_exec_client_requesting_task",{"client_id":"xxxx"})
+        ret = rpc_send("rpc_exec_client_requesting_task",{"user_id":"xxxx"})
         try: 
             assert ret == {'status_code': 200, 'return': []}
             self.index += 1

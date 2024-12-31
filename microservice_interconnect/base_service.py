@@ -13,7 +13,13 @@ class BaseService:
     Other services are built as child of this one
     Implements registration and queue management for RabbitMQ
     """
-    def __init__(self, hide_error_info:bool=False) -> None:
+    def __init__(
+            self, 
+            hide_error_info:bool=False, 
+            broker_host="localhost",
+            broker_port=5672) -> None:
+        self.broker_host = broker_host
+        self.broker_port = broker_port
         self.hide_error_info = hide_error_info
         self.func_name_to_func_and_schema_map = {}
 
@@ -70,6 +76,7 @@ class BaseService:
         :return: HTTP response body as a string
         """
         rcv_data = json.loads(body)
+        print(f"Received {func_name} / {rcv_data}")
         
         try:
             func_and_schema = self.func_name_to_func_and_schema_map[func_name]
@@ -128,7 +135,9 @@ class BaseService:
     def start(self, background:bool=False):
 
         self.connection = pika.SelectConnection(
-            pika.ConnectionParameters(host="localhost"),
+            pika.ConnectionParameters(
+                host=self.broker_host, 
+                port=self.broker_port),
             on_open_callback=self._on_open
         )
 

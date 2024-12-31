@@ -169,3 +169,7 @@ cloud_task_manager/db/*
 user_manager/db/*
 
 .vscode
+
+# events file created by the event_reader.py script 
+events.json
+
