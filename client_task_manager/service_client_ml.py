@@ -8,7 +8,7 @@ import json
 import os
 from typing import Callable
 from pathlib import Path
-from time import sleep
+from time import sleep, time
 import configparser
 
 class ServiceClientML:
@@ -59,15 +59,15 @@ class ServiceClientML:
     
             policy_functions = {"one":self.run_task_one_policy,
                                 "all":self.run_tasks_all_policy}
-            policy_function = policy_functions.get(policy)
+            self.policy_function = policy_functions.get(policy)
     
-            if policy_function is None:
+            if self.policy_function is None:
                 print("Policy should be 'one' or 'all'. Default: one")
-                policy_function = self.run_task_one_policy
+                self.policy_function = self.run_task_one_policy
         
             register_event("service_client_ml","main","Started",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
     
-            self._continuous_procedure(policy_function)
+            self._continuous_procedure()
 
     def _update_info_procedure(self):
         """
@@ -82,11 +82,20 @@ class ServiceClientML:
         if (response is not None):
             self.current_tasks_list = response
         
-    def _continuous_procedure(self, policy_function:Callable[[list],None]):
+    def _continuous_procedure(self):
+
+        def _semaphore():
+            start = time()
+            while (time()-start  < request_interval) and (not self.changed_running_tasks_state):
+                pass
+            self.changed_running_tasks_state = False
+
+        self.changed_running_tasks_state = False
+        
         while True:
             self._update_info_procedure()
-            policy_function(self.current_tasks_list.copy())
-            sleep(request_interval)
+            self.policy_function(self.current_tasks_list.copy())
+            _semaphore()
 
     def run_tasks_all_policy(self, tasks_list:list):
         raise NotImplementedError
@@ -111,7 +120,7 @@ class ServiceClientML:
         register_event("service_client_ml","run_task_one_policy","Started downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         task_id = self.selected_task_info.get("ID") # We assume that the received task was alredy validated at RPC library
-        task_arguments = self.selected_task_info.get("arguments") # We assume that the received task was alredy validated at RPC library
+        task_arguments = self.selected_task_info.get("client_arguments") # We assume that the received task was alredy validated at RPC library
         try:
             download_task_training_files(
                 task_id=task_id,
@@ -200,6 +209,8 @@ class ServiceClientML:
         
         register_event("service_client_ml","handle_error_from_task",f"Finished handling error from task {task_id}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
+        self.changed_running_tasks_state = True
+
     def start_client_task(self, task_id:str, arguments:str):
         """
         After downloading task, starts it
@@ -222,15 +233,17 @@ class ServiceClientML:
         
 
         def finish_task(task_id:str):
-            register_event("service_client_ml","finish_task",f"Started handling task {task_id} finalziation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+            register_event("service_client_ml","finish_task",f"Started handling task {task_id} finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
             
             try:
                 self.client_ml_backend.stop_task(task_id)
             except Exception as e:
                 print(e)
                 raise e
+            
+            self.changed_running_tasks_state = True
 
-            register_event("service_client_ml","finish_task",f"Finished handling task {task_id} finalziation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+            register_event("service_client_ml","finish_task",f"Finished handling task {task_id} finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         forwarder = ForwardMessagesFromClientTask(
             task_id,

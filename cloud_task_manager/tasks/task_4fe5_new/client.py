@@ -13,8 +13,7 @@ from task_daemon_lib.task_reporter import TaskReporter
 class FlowerClient(NumPyClient):
     def fit(self, parameters, config):
         set_weights(net, parameters)
-        print("start training")
-        results = train(net, trainloader, testloader, epochs=1, device=DEVICE)
+        results = train(net, trainloader, testloader, sys.argv[1], task_reporter=task_reporter, epochs=1, device=DEVICE)
         return get_weights(net), len(trainloader.dataset), results
 
     def evaluate(self, parameters, config):
@@ -27,6 +26,7 @@ if __name__ == "__main__":
     try:
         if sys.argv[1] != "cli":
             task_reporter = TaskReporter()
+        else: task_reporter = None
 
         net = Net().to(DEVICE)
         
@@ -37,7 +37,6 @@ if __name__ == "__main__":
             if sys.argv[2] == "test-error":
                 raise Exception
 
-        print("start")
         start_client(
             server_address="127.0.0.1:8080",
             client=FlowerClient().to_client(),

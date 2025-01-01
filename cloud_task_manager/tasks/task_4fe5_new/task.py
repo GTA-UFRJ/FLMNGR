@@ -41,20 +41,32 @@ def load_data(data_path):
     return DataLoader(trainset, batch_size=32, shuffle=True), DataLoader(testset)
 
 
-def train(net, trainloader, valloader, epochs, device):
+def train(net, trainloader, valloader, id, task_reporter=None, epochs=1, device='cpu'):
     """Train the model on the training set."""
     log(INFO, "Starting training...")
     net.to(device)  # move model to GPU if available
     criterion = torch.nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
     net.train()
-    for _ in range(epochs):
-        for images, labels in trainloader:
+    if id == "cli":
+        print(f"{id} will start training")
+    else:
+        task_reporter.send_info("will strat training")
+    for epoch in range(epochs):
+        for it, (images, labels) in enumerate(trainloader):
             images, labels = images.to(device), labels.to(device)
             optimizer.zero_grad()
             loss = criterion(net(images), labels)
             loss.backward()
             optimizer.step()
+            
+            if it*32 % 3200 == 0:            
+                if id == "cli":
+                    print(f"{id} trained with {it*32} samples")
+                else:
+                    task_reporter.send_info("trained with {it*32} samples")
+            if it*32 >= 10000:
+                break
 
     train_loss, train_acc = test(net, trainloader)
     val_loss, val_acc = test(net, valloader)

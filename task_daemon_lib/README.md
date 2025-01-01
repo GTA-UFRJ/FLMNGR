@@ -7,15 +7,15 @@ The task initializers uppon execution, create a Flower child process that report
 Here are the commands to run the server in one terminal, followed by
 two clients in other terminals:
 ```
-python -m cloud_task_manager.task_daemon_lib.server_side_task
+python -m task_daemon_lib.server_side_task
 ```
 
 ```
-python -m cloud_task_manager.task_daemon_lib.client_side_task
+python -m task_daemon_lib.client_side_task
 ```
 
 ```
-python -m cloud_task_manager.task_daemon_lib.client_side_task
+python -m task_daemon_lib.client_side_task
 ```
 
 ### How to develop Flower tasks compatible with FTDL?
