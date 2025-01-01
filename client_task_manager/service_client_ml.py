@@ -86,7 +86,7 @@ class ServiceClientML:
         while True:
             self._update_info_procedure()
             policy_function(self.current_tasks_list.copy())
-            sleep(10)
+            sleep(request_interval)
 
     def run_tasks_all_policy(self, tasks_list:list):
         raise NotImplementedError
@@ -106,24 +106,24 @@ class ServiceClientML:
                             if task not in self.problematic_tasks]
         if len(candidates_tasks) == 0:
             return
-        selected_task_info = candidates_tasks[0]
+        self.selected_task_info = candidates_tasks[0]
 
         register_event("service_client_ml","run_task_one_policy","Started downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
-        task_id = selected_task_info.get("ID") # We assume that the received task was alredy validated at RPC library
-        task_arguments = selected_task_info.get("arguments") # We assume that the received task was alredy validated at RPC library
+        task_id = self.selected_task_info.get("ID") # We assume that the received task was alredy validated at RPC library
+        task_arguments = self.selected_task_info.get("arguments") # We assume that the received task was alredy validated at RPC library
         try:
             download_task_training_files(
                 task_id=task_id,
                 work_path=self.tasks_path,
-                username=selected_task_info.get("username"),
-                password=selected_task_info.get("password"),
-                files_paths=selected_task_info.get("files_paths"),
+                username=self.selected_task_info.get("username"),
+                password=self.selected_task_info.get("password"),
+                files_paths=self.selected_task_info.get("files_paths"),
                 download_server_url=self.download_url
             )
         except Exception as e:
-            print(f"Exception occured while starting task {task_id}: {e}")
-            self.problematic_tasks.append(selected_task_info)
+            print(f"Exception occured while downloading task {task_id}: {e}")
+            self.problematic_tasks.append(self.selected_task_info)
             return
         
         register_event("service_client_ml","run_task_one_policy","Finished downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
@@ -188,11 +188,17 @@ class ServiceClientML:
 
         :raises: TaskIdNotFound
         """
+        register_event("service_client_ml","handle_error_from_task",f"Started handling error from task {task_id}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         try:
             print("Treat error from task...")
             self.client_ml_backend.stop_task(task_id)
+            print(f"Since an error was encountered in task {task_id}, it will be send to quarentine")
+            self.problematic_tasks.append(self.selected_task_info)
         except TaskAlredyStopped:
             print(f"Received error from task {task_id}, which was alredy stopped")
+        
+        register_event("service_client_ml","handle_error_from_task",f"Finished handling error from task {task_id}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def start_client_task(self, task_id:str, arguments:str):
         """
@@ -214,10 +220,22 @@ class ServiceClientML:
         """
         register_event("service_client_ml","start_client_task","Started client task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
         
+
+        def finish_task(task_id:str):
+            register_event("service_client_ml","finish_task",f"Started handling task {task_id} finalziation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+            
+            try:
+                self.client_ml_backend.stop_task(task_id)
+            except Exception as e:
+                print(e)
+                raise e
+
+            register_event("service_client_ml","finish_task",f"Finished handling task {task_id} finalziation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         forwarder = ForwardMessagesFromClientTask(
             task_id,
             self.handle_error_from_task,
-            self.client_ml_backend.stop_task)
+            finish_task)
         callback = forwarder.process_messages
         
         self.client_ml_backend.start_new_task(
@@ -233,6 +251,7 @@ if __name__ == "__main__":
     configs = configparser.ConfigParser()
     configs.read("config.ini")
     allow_register = configs.getboolean("events","register_events")
+    request_interval = int(configs["client.params"]["request_interval"])
 
     service = ServiceClientML(
         os.path.join(Path().resolve(),"client_task_manager"),

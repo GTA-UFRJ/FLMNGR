@@ -94,10 +94,14 @@ class ServiceCloudML(BaseService):
 
         :raises: TaskIdNotFound
         """
+        register_event("service_cloud_ml","handle_error_from_task",f"Started handling error from task {task_id}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         try:
             self.cloud_ml_backend.stop_task(task_id)
         except TaskAlredyStopped:
             print(f"Received error from task {task_id}, which was alredy stopped")
+
+        register_event("service_cloud_ml","handle_error_from_task",f"Finished handling error from task {task_id}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def rpc_exec_create_task(self, received: dict):
         """
@@ -326,5 +330,6 @@ if __name__ == "__main__":
         port)
     try:
         service.start()
-    except KeyboardInterrupt as e:
+    except Exception as e:
+        service.cloud_ml_backend.finish_all()
         service.stop()

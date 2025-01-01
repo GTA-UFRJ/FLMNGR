@@ -1,4 +1,5 @@
 from microservice_interconnect.base_service import BaseService
+from microservice_interconnect.rpc_client import register_event
 import json
 import os
 import requests
@@ -22,6 +23,9 @@ class ServiceAmqpGateway(BaseService):
             cloud_gateway_port=5672) -> None:
         super().__init__(broker_host=client_broker_host, broker_port=client_broker_port)
 
+        self.broker_host = client_broker_host
+        self.broker_port = client_broker_port
+
         self.workpath = workpath
         self.server_url = f"http://{cloud_gateway_host}:{cloud_gateway_port}"
 
@@ -36,6 +40,8 @@ class ServiceAmqpGateway(BaseService):
             func_name="rpc_exec_client_requesting_task",
             schema=self._get_schema("rpc_exec_client_requesting_task")
         )
+
+        register_event("client_gateway","main","Started",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def _get_schema(self, func_name: str) -> dict:
         """
@@ -56,7 +62,7 @@ class ServiceAmqpGateway(BaseService):
 
     def _redirect_json_to_url(self, url:str, data:dict) -> dict:
         """
-        Send JSON data to URL using HTTP and returns JSON response 
+        Send JSON data to URL using HTTP and returns JSON response  
         """
         response = requests.post(url=url, json=data)
         if response.status_code == 200:
@@ -69,21 +75,33 @@ class ServiceAmqpGateway(BaseService):
             raise CloudOperationFailed(url)
 
     def rpc_redirect_update_user_info(self, received:dict):
+        register_event("client_gateway","rpc_redirect_update_user_info","Started redirecting update user info msg",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         url=f"{self.server_url}/rpc_exec_update_user_info"
 
         # Do not validate server response!
-        return self._redirect_json_to_url(url, data=received)
+        response_from_cloud_gateway = self._redirect_json_to_url(url, data=received)
+        
+        register_event("client_gateway","rpc_redirect_update_user_info","Finished redirecting update user info msg",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        return response_from_cloud_gateway
 
     def rpc_redirect_client_requesting_task(self, received:dict):
+        register_event("client_gateway","rpc_redirect_client_requesting_task","Started redirecting task request msg",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+
         url=f"{self.server_url}/rpc_exec_client_requesting_task"
 
         # Do not validate server response!
-        return self._redirect_json_to_url(url, data=received)
+        response_from_cloud_gateway = self._redirect_json_to_url(url, data=received)
+    
+        register_event("client_gateway","rpc_redirect_client_requesting_task","Finished redirecting task request msg",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        return response_from_cloud_gateway
+    
     
 if __name__ == "__main__":
 
     configs = configparser.ConfigParser()
     configs.read("./config.ini")
+    allow_register = configs.getboolean("events","register_events")
 
     service = ServiceAmqpGateway(
         workpath=os.path.join(Path().resolve(), "client_gateway"),
