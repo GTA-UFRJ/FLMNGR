@@ -1,6 +1,6 @@
 import configparser
 from threading import Thread, Lock
-
+import signal
 import pika
 
 fd = open("events.json", "w")
@@ -42,6 +42,19 @@ if __name__ == "__main__":
 
     a = WorkerThread(configs["server.broker"]["host"], configs["server.broker"]["port"])
     b = WorkerThread(configs["client.broker"]["host"], configs["client.broker"]["port"])
+
+    def signal_handler(sig,frame):
+        print("Saving file")
+        fd.write("]")
+        fd.close()
+        a.stop()
+        b.stop()
+        a.join()
+        b.join()
+        exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     a.start()
     b.start()

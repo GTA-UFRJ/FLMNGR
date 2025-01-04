@@ -18,10 +18,11 @@ echo "Start client broker"
 docker stop client-broker-rabbit
 docker rm client-broker-rabbit
 docker run --hostname broker --name client-broker-rabbit -p 8000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/client_broker.log 2>&1 &
-sleep 5
+sleep 10
 
 echo "Start event reader"
 python -u -m event_reader > logs_${LOG_TIMESTAMP}/event_reader.log 2>&1 &
+echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 ## CLOUD SIDE
@@ -72,9 +73,11 @@ sleep 30
 
 ## FINALIZATION
 
+
 cd logs_${LOG_TIMESTAMP}
 python kill_processes.py
 
 cd ..
+cp events.json logs_${LOG_TIMESTAMP}
 rm -r cloud_task_manager/tasks/task_E
 rm -r cloud_task_manager/tasks/task_C

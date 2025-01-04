@@ -2,6 +2,8 @@ import os
 import json
 import configparser
 from pathlib import Path
+import signal
+import sys
 
 from cloud_task_manager.cloud_ml import CloudML
 from cloud_task_manager.criteria_evaluation_engine import *
@@ -324,11 +326,19 @@ if __name__ == "__main__":
     port = int(configs["server.broker"]["port"])
     allow_register = configs.getboolean("events","register_events")
 
+    def signal_handler(sig,frame):
+        register_event("service_cloud_ml","main","Interrupted",allow_registering=allow_register,host=host,port=port)
+        service.cloud_ml_backend.finish_all()
+        service.stop()
+        exit(0)
+        
     service = ServiceCloudML(
         os.path.join(Path().resolve(),"cloud_task_manager"), 
         host, 
         port)
     try:
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
         service.start()
     except Exception as e:
         service.cloud_ml_backend.finish_all()

@@ -10,6 +10,7 @@ from typing import Callable
 from pathlib import Path
 from time import sleep, time
 import configparser
+import signal
 
 class ServiceClientML:
     """
@@ -54,6 +55,8 @@ class ServiceClientML:
         
         self.current_tasks_list = []
         self.problematic_tasks = []
+
+        self.set_signal()
         
         if autorun:
     
@@ -68,6 +71,14 @@ class ServiceClientML:
             register_event("service_client_ml","main","Started",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
     
             self._continuous_procedure()
+
+    def set_signal(self):
+        def signal_handler(sig,frame):
+            register_event("service_client_ml","main","Interrupted",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+            self.client_ml_backend.finish_all()
+            exit(0)
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
 
     def _update_info_procedure(self):
         """

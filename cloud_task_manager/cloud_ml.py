@@ -107,7 +107,8 @@ class CloudML:
         """
 
         print("Stopping all tasks!")
-        for task_id in self.task_id_to_task_object_map.keys():
+        tasks_list = self.task_id_to_task_object_map.copy().keys()
+        for task_id in tasks_list:
             try:
                 self.stop_task(task_id)
                 print(f"Stopped task {task_id}")
