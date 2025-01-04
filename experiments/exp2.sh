@@ -79,5 +79,10 @@ python kill_processes.py
 
 cd ..
 cp events.json logs_${LOG_TIMESTAMP}
+cp events.json experiments
 rm -r cloud_task_manager/tasks/task_E
 rm -r cloud_task_manager/tasks/task_C
+
+cd experiments
+echo "---- RESULTS ----" >> exp2_raw_times
+python exp2_process_results.py >> exp2_raw_times

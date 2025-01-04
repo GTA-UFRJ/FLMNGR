@@ -1,0 +1,49 @@
+---- RESULTS ----
+Time for starting a task = 4.851765394210815 seconds
+Time for a bug to happen = 1.8372020721435547 seconds
+Time for handling error = 0.9514503479003906 seconds
+Time for requesting a new task = 0.022498369216918945 seconds
+Time for downloading a new task = 0.011981487274169922 seconds
+Time for starting the new task = 4.851765394210815 seconds
+---- RESULTS ----
+Time for starting a task = 3.430058240890503 seconds
+Time for a bug to happen = 1.7288806438446045 seconds
+Time for handling error = 0.7519533634185791 seconds
+Time for requesting a new task = 0.02411675453186035 seconds
+Time for downloading a new task = 0.011150121688842773 seconds
+Time for starting the new task = 3.430058240890503 seconds
+---- RESULTS ----
+Time for starting a task = 4.337054491043091 seconds
+Time for a bug to happen = 1.8341121673583984 seconds
+Time for handling error = 0.9596514701843262 seconds
+Time for requesting a new task = 0.022783994674682617 seconds
+Time for downloading a new task = 0.00932621955871582 seconds
+Time for starting the new task = 4.337054491043091 seconds
+---- RESULTS ----
+Time for starting a task = 4.9263458251953125 seconds
+Time for a bug to happen = 1.8306047916412354 seconds
+Time for handling error = 1.0253689289093018 seconds
+Time for requesting a new task = 0.022426605224609375 seconds
+Time for downloading a new task = 0.008478641510009766 seconds
+Time for starting the new task = 4.9263458251953125 seconds
+---- RESULTS ----
+Time for starting a task = 4.646925449371338 seconds
+Time for a bug to happen = 1.7908213138580322 seconds
+Time for handling error = 0.9099307060241699 seconds
+Time for requesting a new task = 0.021874427795410156 seconds
+Time for downloading a new task = 0.0095367431640625 seconds
+Time for starting the new task = 4.646925449371338 seconds
+---- RESULTS ----
+Time for starting a task = 3.7074859142303467 seconds
+Time for a bug to happen = 1.7184312343597412 seconds
+Time for handling error = 0.7051365375518799 seconds
+Time for requesting a new task = 0.0242154598236084 seconds
+Time for downloading a new task = 0.009354829788208008 seconds
+Time for starting the new task = 3.7074859142303467 seconds
+---- RESULTS ----
+Time for starting a task = 4.388461351394653 seconds
+Time for a bug to happen = 1.7412612438201904 seconds
+Time for handling error = 0.9159481525421143 seconds
+Time for requesting a new task = 0.02227020263671875 seconds
+Time for downloading a new task = 0.011777162551879883 seconds
+Time for starting the new task = 4.388461351394653 seconds
