@@ -171,6 +171,8 @@ logs_*/*
 
 .vscode
 
+pids 
+
 # events file created by the event_reader.py script 
 events.json
 
