@@ -4,7 +4,6 @@ from flask import Flask, request, jsonify
 from microservice_interconnect.rpc_client import rpc_send
 from microservice_interconnect.rpc_client import register_event
 
-
 app = Flask(__name__)
 
 configs = configparser.ConfigParser()
