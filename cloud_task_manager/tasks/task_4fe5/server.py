@@ -98,7 +98,7 @@ if __name__ == "__main__":
         )
 
         if sys.argv[1] != "cli":
-            register_event("task_client","main","Finished server",allow_registering=allow_register,host=host,port=port)
+            register_event("task_server","main","Finished server",allow_registering=allow_register,host=host,port=port)
             task_reporter.send_info("Finished")
 
     except Exception as e:

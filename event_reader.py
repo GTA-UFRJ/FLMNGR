@@ -3,6 +3,7 @@ from threading import Thread, Lock
 import signal
 import pika
 import os
+import time
 
 fd = open("events.json", "wb")
 fd.write(bytes("[\n","utf8"))
@@ -45,6 +46,7 @@ if __name__ == "__main__":
     b = WorkerThread(configs["client.broker"]["host"], configs["client.broker"]["port"])
 
     def signal_handler(sig,frame):
+        time.sleep(3)
         a.stop()
         b.stop()
         a.join()

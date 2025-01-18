@@ -250,6 +250,7 @@ class ServiceClientML:
                 self.client_ml_backend.stop_task(task_id)
             except Exception as e:
                 print(e)
+                register_event("service_client_ml","finish_task",f"Finished handling task {task_id} finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
                 raise e
             
             self.changed_running_tasks_state = True

@@ -1,3 +1,8 @@
 ---- RESULTS ----
----- RESULTS ----
----- RESULTS ----
+1) Time for registering a task = 0.015031814575195312 seconds
+2) Time for starting a task at cloud = 0.005555868148803711 seconds
+3) Time for updating client info = 0.014654397964477539 seconds
+4) Time for requesting a task = 0.0065174102783203125 seconds
+5) Time for downloading a task = 0.005085468292236328 seconds
+6) Time for starting a task at client = 1.9541010856628418 seconds
+7) Time for finishing a task at client = 3.0788490772247314 seconds
