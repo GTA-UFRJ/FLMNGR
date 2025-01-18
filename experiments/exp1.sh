@@ -22,6 +22,7 @@ sleep 10
 
 echo "Start event reader"
 python -u -m event_reader > logs_${LOG_TIMESTAMP}/event_reader.log 2>&1 &
+echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 ## CLOUD SIDE
@@ -67,10 +68,19 @@ echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 10
 
 echo "Start second Flower client, which will trigger FL to starts"
-python -u -m cloud_task_manager.tasks.task_4fe5.client cli 
+python -u -m cloud_task_manager.tasks.task_4fe5.client cli
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
+sleep 5
 
 ## FINALIZATION
 
 cd logs_${LOG_TIMESTAMP}
 python kill_processes.py
+
+cd ..
+cp events.json logs_${LOG_TIMESTAMP}
+cp events.json experiments
+
+cd experiments
+echo "---- RESULTS ----" >> exp1_raw_times
+#python exp1_process_results.py >> exp1_raw_times

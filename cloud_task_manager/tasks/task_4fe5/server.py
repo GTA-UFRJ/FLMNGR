@@ -7,9 +7,13 @@ if sys.argv[1] != "cli":
 
 from typing import List, Tuple
 
+import configparser
+
 from flwr.common import Metrics, ndarrays_to_parameters
 from flwr.server import ServerConfig, start_server
 from flwr.server.strategy import FedAvg
+from microservice_interconnect.rpc_client import register_event
+
 
 from task import Net, get_weights
 
@@ -65,12 +69,23 @@ def get_strategy():
 if __name__ == "__main__":
 
     try:
+
+        configs = configparser.ConfigParser()
+        configs.read("config.ini")
+
+        host = configs["client.broker"]["host"]
+        port = int(configs["client.broker"]["port"])
+        allow_register = configs.getboolean("events","register_events")
+
+
         if sys.argv[1] != "cli":
             task_reporter = TaskReporter()
+            register_event("task_server","main","Started server",allow_registering=allow_register,host=host,port=port)
+
 
         comm_round = 1
 
-        config = ServerConfig(num_rounds=5)
+        config = ServerConfig(num_rounds=1)
 
         if len(sys.argv) >= 3:
             if sys.argv[2] == "test-error":
@@ -83,10 +98,12 @@ if __name__ == "__main__":
         )
 
         if sys.argv[1] != "cli":
+            register_event("task_client","main","Finished server",allow_registering=allow_register,host=host,port=port)
             task_reporter.send_info("Finished")
 
     except Exception as e:
         if sys.argv[1] == "cli":
             raise e
+        register_event("task_server","main","Ended server",allow_registering=allow_register,host=host,port=port)
         task_reporter.send_error(e)
 

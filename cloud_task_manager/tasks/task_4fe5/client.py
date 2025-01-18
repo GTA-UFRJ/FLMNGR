@@ -36,7 +36,7 @@ if __name__ == "__main__":
         
         if sys.argv[1] != "cli":
             task_reporter = TaskReporter()
-            register_event("task_client","main","Started",allow_registering=allow_register,host=host,port=port)
+            register_event("task_client","main","Started client",allow_registering=allow_register,host=host,port=port)
 
         net = Net().to(DEVICE)
         
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         )    
         
         if sys.argv[1] != "cli":
-            register_event("task_client","main","Finished",allow_registering=allow_register,host=host,port=port)
+            register_event("task_client","main","Finished client",allow_registering=allow_register,host=host,port=port)
             task_reporter.send_info("Finished")
     
     except Exception as e:
