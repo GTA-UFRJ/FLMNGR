@@ -25,7 +25,7 @@ class RpcClient(metaclass=Singleton):
         :param queue_name: destination function name
         """
 
-        self._connection_params = pika.ConnectionParameters(host=host, port=port)
+        self._connection_params = pika.ConnectionParameters(host=host, heartbeat=15, port=port)
         self._connection = None
         self._channel = None
 
