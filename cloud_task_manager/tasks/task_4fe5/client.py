@@ -6,7 +6,7 @@ if sys.argv[1] != "cli":
     sys.path.append(sys.argv[1])
 
 from flwr.client import NumPyClient, start_client
-from task import DEVICE, Net, get_weights, load_data, set_weights, test, train
+from task import DEVICE, Net, Net2, get_weights, load_data, set_weights, test, train
 from task_daemon_lib.task_reporter import TaskReporter
 from microservice_interconnect.rpc_client import register_event
 import configparser
@@ -37,15 +37,20 @@ if __name__ == "__main__":
         if sys.argv[1] != "cli":
             task_reporter = TaskReporter()
             register_event("task_client","main","Started",allow_registering=allow_register,host=host,port=port)
-
-        net = Net().to(DEVICE)
+        
+        if len(sys.argv >= 3):
+            if sys.argv[2] == "low-accuracy":
+                net = Net2().to(DEVICE)
+            
+            else:
+                net = Net().to(DEVICE)
         
         data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data'))
         trainloader, testloader = load_data(data_path)
 
         if len(sys.argv) >= 3:
             if sys.argv[2] == "test-error":
-                raise Exception
+                raise Exception 
 
         print("start")
         start_client(

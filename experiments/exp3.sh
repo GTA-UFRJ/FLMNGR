@@ -9,15 +9,15 @@ mkdir -p logs_${LOG_TIMESTAMP}
 cp experiments/kill_processes.py logs_${LOG_TIMESTAMP}
 
 echo "Start server broker"
-docker stop server-broker-rabbit
-docker rm server-broker-rabbit
-docker run --hostname broker --name server-broker-rabbit -p 9000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/cloud_broker.log 2>&1 &
+sudo docker stop server-broker-rabbit
+sudo docker rm server-broker-rabbit
+sudo docker run --hostname broker --name server-broker-rabbit -p 9000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/cloud_broker.log 2>&1 &
 sleep 5
 
 echo "Start client broker"
-docker stop client-broker-rabbit
-docker rm client-broker-rabbit
-docker run --hostname broker --name client-broker-rabbit -p 8000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/client_broker.log 2>&1 &
+sudo docker stop client-broker-rabbit
+sudo docker rm client-broker-rabbit
+sudo docker run --hostname broker --name client-broker-rabbit -p 8000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/client_broker.log 2>&1 &
 sleep 10
 
 echo "Start event reader"

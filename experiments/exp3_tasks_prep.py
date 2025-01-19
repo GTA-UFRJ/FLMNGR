@@ -9,19 +9,19 @@ if __name__ == "__main__":
     configs.read("config.ini")
 
     ret = rpc_send("rpc_exec_create_task",
-            {"task_id":"E",
+            {"task_id":"L",
             'host':'localhost',
             'port':8081,
             'username':'user',
             'password':'123',
             'files_paths':['client.py','task.py'],
-            'client_arguments':'test-error'
+            'client_arguments':'low-accuracy'
             },
             host=configs["server.broker"]["host"],
             port=configs["server.broker"]["port"])
     
     ret = rpc_send("rpc_exec_create_task",
-            {"task_id":"C",
+            {"task_id":"H",
             'host':'localhost',
             'port':8080,
             'username':'user',
@@ -31,5 +31,5 @@ if __name__ == "__main__":
             host=configs["server.broker"]["host"],
             port=configs["server.broker"]["port"])
     
-    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"E"})
-    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"C"})
+    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"L"})
+    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"H"})

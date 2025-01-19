@@ -11,7 +11,7 @@ from flwr.common import Metrics, ndarrays_to_parameters
 from flwr.server import ServerConfig, start_server
 from flwr.server.strategy import FedAvg
 
-from task import Net, get_weights
+from task import Net, Net2, get_weights
 
 from task_daemon_lib.task_reporter import TaskReporter
 #from task_reporter_temp import TaskReporter
@@ -39,8 +39,10 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     if acc >= 0.5:
         task_reporter.trigger("trigger_example",str(acc))
 
-    #if acc <= 0.6 and comm_round == 10:
-    #    rpc_call("rpc_exec_start_tas", ...)
+    # adapt the rpc_send
+    #if acc <= 0.5 and comm_round == 3:
+    #    rpc_call("rpc_exec_start_task", {"task_id"}:"H")
+    #    raise Exception
 
     # Aggregate and return custom metric (weighted average)
     return {
@@ -50,8 +52,13 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
         "val_accuracy": sum(val_accuracies) / sum(examples),
     }
 
-def get_strategy():
-    ndarrays = get_weights(Net())
+def get_strategy(net_id=1):
+    if net_id == 1: # adapting for experiment3
+        ndarrays = get_weights(Net()) 
+    
+    elif net_id == 2:
+        ndarrays = get_weights(Net2()) # adapting for experiment3
+    
     parameters = ndarrays_to_parameters(ndarrays)
 
     return FedAvg(
@@ -75,12 +82,18 @@ if __name__ == "__main__":
         if len(sys.argv) >= 3:
             if sys.argv[2] == "test-error":
                 raise Exception
-
-        start_server(
-            server_address="0.0.0.0:8080",
-            config=config,
-            strategy=get_strategy(),
-        )
+            elif sys.argv[2] == "low-accuracy":
+                start_server(
+                    server_address="0.0.0.0:8080",
+                    config=config,
+                    strategy=get_strategy(2),
+                )
+        else:
+            start_server(
+                server_address="0.0.0.0:8080",
+                config=config,
+                strategy=get_strategy(1),
+            )
 
         if sys.argv[1] != "cli":
             task_reporter.send_info("Finished")
