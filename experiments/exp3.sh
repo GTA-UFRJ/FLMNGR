@@ -49,12 +49,12 @@ python -u -m user_manager.service_user_manager > logs_${LOG_TIMESTAMP}/service_u
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
-echo "Create tasks E and C and run tasks E and C"
-cp -r cloud_task_manager/tasks/task_4fe5 cloud_task_manager/tasks/task_E
-sed -i 's/8080/8081/g' cloud_task_manager/tasks/task_E/client.py
-sed -i 's/8080/8081/g' cloud_task_manager/tasks/task_E/server.py
-cp -r cloud_task_manager/tasks/task_4fe5 cloud_task_manager/tasks/task_C
-python -u -m experiments.exp2_tasks_prep
+echo "Create tasks L and H and run tasks L and H"
+cp -r cloud_task_manager/tasks/task_4fe5 cloud_task_manager/tasks/task_L
+sed -i 's/8080/8081/g' cloud_task_manager/tasks/task_L/client.py
+sed -i 's/8080/8081/g' cloud_task_manager/tasks/task_L/server.py
+cp -r cloud_task_manager/tasks/task_4fe5 cloud_task_manager/tasks/task_H
+python -u -m experiments.exp3_tasks_prep
 sleep 10
 
 ## CLIENT SIDE
@@ -80,9 +80,9 @@ python kill_processes.py
 cd ..
 cp events.json logs_${LOG_TIMESTAMP}
 cp events.json experiments
-rm -r cloud_task_manager/tasks/task_E
-rm -r cloud_task_manager/tasks/task_C
+rm -r cloud_task_manager/tasks/task_L
+rm -r cloud_task_manager/tasks/task_H
 
 cd experiments
-echo "---- RESULTS ----" >> exp2_raw_times
-python exp2_process_results.py >> exp2_raw_times
+echo "---- RESULTS ----" >> exp3_raw_times
+python exp3_process_results.py >> exp3_raw_times
