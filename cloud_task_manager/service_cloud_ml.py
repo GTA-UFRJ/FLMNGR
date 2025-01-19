@@ -4,6 +4,7 @@ import configparser
 from pathlib import Path
 import signal
 import sys
+import time as tm
 
 from cloud_task_manager.cloud_ml import CloudML
 from cloud_task_manager.criteria_evaluation_engine import *
@@ -114,6 +115,7 @@ class ServiceCloudML(BaseService):
 
         :raises: sqlite3.IntegrityError
         """
+        startTime = tm.process_time_ns()
         register_event("service_cloud_ml","rpc_exec_create_task","Started task creation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         self.db_handler.insert_task(
@@ -129,7 +131,8 @@ class ServiceCloudML(BaseService):
             tags=received.get("tags"),
         )
 
-        register_event("service_cloud_ml","rpc_exec_create_task","Finished task creation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        register_event("service_cloud_ml","rpc_exec_create_task",f"Finished task creation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        register_event("service_cloud_ml","create_task_time",f"{tm.process_time_ns()-startTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def rpc_exec_start_server_task(self, received: dict):
         """
@@ -151,6 +154,7 @@ class ServiceCloudML(BaseService):
 
         :raises: TaskNotRegistered
         """
+        startTime = tm.process_time_ns()
         register_event("service_cloud_ml","rpc_exec_start_server_task","Started server task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         def finish_task(task_id: str):
@@ -184,6 +188,7 @@ class ServiceCloudML(BaseService):
             raise e
         
         register_event("service_cloud_ml","rpc_exec_start_server_task","Finished server task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        register_event("service_cloud_ml","start_task_time",f"{tm.process_time_ns()-startTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def rpc_exec_stop_server_task(self, received: dict):
         """
