@@ -33,7 +33,7 @@ echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 echo "Start cloud task manager"
-rm cloud_task_manager/db/tasks.db
+[ -d "cloud_task_manager/db/tasks.db" ] && rm cloud_task_manager/db/tasks.db
 python -u -m cloud_task_manager.service_cloud_ml > logs_${LOG_TIMESTAMP}/service_cloud_ml.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
@@ -44,7 +44,7 @@ echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 echo "Start user manager"
-rm user_manager/db/users.db
+[ -d "user_manager/db/users.db" ] && rm user_manager/db/users.db
 python -u -m user_manager.service_user_manager > logs_${LOG_TIMESTAMP}/service_user_manager.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
@@ -65,8 +65,8 @@ echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 echo "Start client tasks manager" 
-rm -rf client_task_manager/tasks/*
-rm -rf client_task_manager/client_info/*
+[ -d "client_task_manager/tasks/" ] && rm -rf client_task_manager/tasks/*
+[ -d "client_task_manager/client_info/" ] && rm -rf client_task_manager/client_info/*
 python -u -m client_task_manager.service_client_ml > logs_${LOG_TIMESTAMP}/service_client_ml.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 30
@@ -80,8 +80,8 @@ python kill_processes.py
 cd ..
 cp events.json logs_${LOG_TIMESTAMP}
 cp events.json experiments
-rm -r cloud_task_manager/tasks/task_L
-rm -r cloud_task_manager/tasks/task_H
+[ -d "cloud_task_manager/tasks/task_L" ] && rm -r cloud_task_manager/tasks/task_L
+[ -d "cloud_task_manager/tasks/task_H" ] && rm -r cloud_task_manager/tasks/task_H
 
 cd experiments
 echo "---- RESULTS ----" >> exp3_raw_times
