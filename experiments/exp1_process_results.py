@@ -34,7 +34,7 @@ def search_for_event_timestamp(dict_list, event_message):
                 #print(f"Event {event_message} in line {6*(last_i+i)+2}")
                 last_i += i+1
                 return entry.get('time'), i
-    return None, i
+    return None, len(dict_list)
 
 def difference_between_events(event_1, event_2, events_to_time_dict):
     if events_to_time_dict[event_1] is not None and events_to_time_dict[event_2] is not None:
@@ -59,12 +59,12 @@ events_to_time_dict = fill_events_to_time_dict (
     list_of_events_dicts,
     [
     # Step 1
-    'Started registering a task',
-    'Finished task creation',
+    'Started registering a task',                   # Enviei rpc_call pra registrar tarefa
+    'Finished task creation',                       # cloud_task_manager registrou
 
     # Step 2
-    'Started starting a task',
-    'Finished server task initialization',
+    'Started starting a task',                      # Enviei rpc_call pra iniciar tarefa
+    'Finished server task initialization',          # cloud_task_manager registrou
 
     # Step 3
     'Started getting client stats for sending',
@@ -89,7 +89,7 @@ events_to_time_dict = fill_events_to_time_dict (
 )
 
 #print("Timestamps: ")
-#pprint(events_to_time_dict)
+pprint(events_to_time_dict)
 
 time_difference = difference_between_events(
     'Started registering a task',

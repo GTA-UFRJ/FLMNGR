@@ -34,7 +34,7 @@ def search_for_event_timestamp(dict_list, event_message):
                 #print(f"Event {event_message} in line {6*(last_i+i)+2}")
                 last_i += i+1
                 return entry.get('time'), i
-    return None, len(dict_list)
+    return None, i
 
 def difference_between_events(event_1, event_2, events_to_time_dict):
     if events_to_time_dict[event_1] is not None and events_to_time_dict[event_2] is not None:
@@ -54,14 +54,13 @@ filename = 'events.json'
 list_of_events_dicts = read_file_to_dict_list(filename)
 with open(filename, 'w') as file:
     json.dump(obj=list_of_events_dicts, fp=file, indent=1, separators=(',',':'))
-#print(list_of_events_dicts)
 
 events_to_time_dict = fill_events_to_time_dict (
     list_of_events_dicts,
     ['Started client task initialization',
-    'Started client',
+    'Started',
     'Error!',
-    'Finished handling error from task E',
+    'Finished handling error from task L',
     'Started requesting task',
     'Finished requesting task',
     'Started downloading task',
@@ -71,13 +70,13 @@ events_to_time_dict = fill_events_to_time_dict (
 #print("Timestamps: ")
 #pprint(events_to_time_dict)
 
-time_difference = difference_between_events("Started client task initialization", "Started client", events_to_time_dict)
+time_difference = difference_between_events("Started client task initialization", "Started", events_to_time_dict)
 print(f"Time for starting a task = {time_difference} seconds")
 
-time_difference = difference_between_events("Started client", "Error!", events_to_time_dict)
+time_difference = difference_between_events("Started", "Error!", events_to_time_dict)
 print(f"Time for a bug to happen = {time_difference} seconds")
 
-time_difference = difference_between_events("Error!", "Finished handling error from task E", events_to_time_dict)
+time_difference = difference_between_events("Error!", "Finished handling error from task L", events_to_time_dict)
 print(f"Time for handling error = {time_difference} seconds")
 
 time_difference = difference_between_events("Started requesting task", "Finished requesting task", events_to_time_dict)
@@ -86,5 +85,5 @@ print(f"Time for requesting a new task = {time_difference} seconds")
 time_difference = difference_between_events("Started downloading task", "Finished downloading task", events_to_time_dict)
 print(f"Time for downloading a new task = {time_difference} seconds")
 
-time_difference = difference_between_events("Started client task initialization", "Started client", events_to_time_dict)
+time_difference = difference_between_events("Started client task initialization", "Started", events_to_time_dict)
 print(f"Time for starting the new task = {time_difference} seconds")

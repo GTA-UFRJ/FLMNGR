@@ -69,7 +69,7 @@ class RpcClient(metaclass=Singleton):
         Function that publishes the message itself. Called by publish function
         """
         if not properties:
-            properties = pika.BasicProperties()
+            properties = pika.BasicProperties(type=self.queue_name)
 
         self._channel.basic_publish(
             exchange="",

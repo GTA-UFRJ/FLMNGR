@@ -9,16 +9,16 @@ mkdir -p logs_${LOG_TIMESTAMP}
 cp experiments/kill_processes.py logs_${LOG_TIMESTAMP}
 
 echo "Start server broker"
-docker stop server-broker-rabbit
-docker rm server-broker-rabbit
-docker run --hostname broker --name server-broker-rabbit -p 9000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/cloud_broker.log 2>&1 &
+sudo docker stop server-broker-rabbit
+sudo docker rm server-broker-rabbit
+sudo docker run --hostname broker --name server-broker-rabbit -p 9000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/cloud_broker.log 2>&1 &
 sleep 1
 
 echo "Start client broker"
-docker stop client-broker-rabbit
-docker rm client-broker-rabbit
-docker run --hostname broker --name client-broker-rabbit -p 8000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/client_broker.log 2>&1 &
-sleep 10
+sudo docker stop client-broker-rabbit
+sudo docker rm client-broker-rabbit
+sudo docker run --hostname broker --name client-broker-rabbit -p 8000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/client_broker.log 2>&1 &
+sleep 20
 
 echo "Start event reader"
 python -u -m event_reader > logs_${LOG_TIMESTAMP}/event_reader.log 2>&1 &
@@ -67,16 +67,16 @@ python -u -m client_task_manager.service_client_ml > logs_${LOG_TIMESTAMP}/servi
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 10
 
-echo "Start second Flower client, which will trigger FL to starts"
-python -u -m cloud_task_manager.tasks.task_4fe5.client cli
-echo $! >>  logs_${LOG_TIMESTAMP}/pids
-sleep 5
+#echo "Start second Flower client, which will trigger FL to starts"
+#python -u -m cloud_task_manager.tasks.task_4fe5.client cli
+#echo $! >>  logs_${LOG_TIMESTAMP}/pids
+#sleep 5
 
 ## FINALIZATION
 
 cd logs_${LOG_TIMESTAMP}
 python kill_processes.py
-sleep 5
+sleep 10
 
 cd ..
 cp events.json logs_${LOG_TIMESTAMP}
