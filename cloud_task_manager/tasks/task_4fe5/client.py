@@ -38,12 +38,11 @@ if __name__ == "__main__":
             task_reporter = TaskReporter()
             register_event("task_client","main","Started",allow_registering=allow_register,host=host,port=port)
         
-        if len(sys.argv >= 3):
-            if sys.argv[2] == "low-accuracy":
-                net = Net2().to(DEVICE)
+        #if len(sys.argv >= 3):
+        #    if sys.argv[2] == "low-accuracy":
+        #        net = Net2().to(DEVICE)
             
-            else:
-                net = Net().to(DEVICE)
+        net = Net().to(DEVICE)
         
         data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data'))
         trainloader, testloader = load_data(data_path)
