@@ -60,7 +60,7 @@ events_to_time_dict = fill_events_to_time_dict (
     ['Started client task initialization',
     'Started',
     'Error!',
-    'Finished handling error from task E',
+    'Finished handling error from task L',
     'Started requesting task',
     'Finished requesting task',
     'Started downloading task',
@@ -76,7 +76,7 @@ print(f"Time for starting a task = {time_difference} seconds")
 time_difference = difference_between_events("Started", "Error!", events_to_time_dict)
 print(f"Time for a bug to happen = {time_difference} seconds")
 
-time_difference = difference_between_events("Error!", "Finished handling error from task E", events_to_time_dict)
+time_difference = difference_between_events("Error!", "Finished handling error from task L", events_to_time_dict)
 print(f"Time for handling error = {time_difference} seconds")
 
 time_difference = difference_between_events("Started requesting task", "Finished requesting task", events_to_time_dict)

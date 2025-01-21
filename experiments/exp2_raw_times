@@ -138,3 +138,9 @@ Time for handling error = 0.9041426181793213 seconds
 Time for requesting a new task = 0.022930622100830078 seconds
 Time for downloading a new task = 0.012949705123901367 seconds
 Time for starting the new task = 4.219585180282593 seconds
+---- RESULTS ----
+Error: The file 'events.json' does not contain valid JSON.
+---- RESULTS ----
+---- RESULTS ----
+---- RESULTS ----
+Error: The file 'events.json' does not contain valid JSON.

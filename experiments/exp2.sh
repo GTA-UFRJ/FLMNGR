@@ -33,7 +33,7 @@ echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 echo "Start cloud task manager"
-[ -d "cloud_task_manager/db/tasks.db" ]  && rm cloud_task_manager/db/tasks.db
+[ -f "cloud_task_manager/db/tasks.db" ] && rm cloud_task_manager/db/tasks.db
 
 python -u -m cloud_task_manager.service_cloud_ml > logs_${LOG_TIMESTAMP}/service_cloud_ml.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
@@ -45,7 +45,7 @@ echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 echo "Start user manager"
-[ -d "user_manager/db/users.db" ] && /rm user_manager/db/users.db
+[ -f "user_manager/db/users.db" ] && rm user_manager/db/users.db
 python -u -m user_manager.service_user_manager > logs_${LOG_TIMESTAMP}/service_user_manager.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
