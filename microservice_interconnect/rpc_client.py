@@ -25,7 +25,7 @@ class RpcClient:
         :param queue_name: destination function name
         """
 
-        self._connection_params = pika.ConnectionParameters(host=host, port=port)
+        self._connection_params = pika.ConnectionParameters(host=host, heartbeat=600, port=port)
         self._connection = None
         self._channel = None
 
@@ -37,19 +37,18 @@ class RpcClient:
 
     def connect(self):
         # Reconnects whenever connection is closed
-        if not self._connection or self._connection.is_closed:
-            self._connection = pika.BlockingConnection(self._connection_params)
+        self._connection = pika.BlockingConnection(self._connection_params)
 
-            self._channel = self._connection.channel()
+        self._channel = self._connection.channel()
 
-            result = self._channel.queue_declare(queue="", exclusive=True)
-            self.callback_queue = result.method.queue
+        result = self._channel.queue_declare(queue="", exclusive=True)
+        self.callback_queue = result.method.queue
 
-            self._channel.basic_consume(
-                queue=self.callback_queue,
-                on_message_callback=self._on_response,
-                auto_ack=True,
-            )
+        self._channel.basic_consume(
+            queue=self.callback_queue,
+            on_message_callback=self._on_response,
+            auto_ack=True,
+        )
 
     def _on_response(self, ch, method, props, body) -> None:
         """
@@ -91,9 +90,13 @@ class RpcClient:
             try:
                 self._publish(data, properties)
                 return
-            except Exception as e:
-                print(f"Failed: {e}. Retry after 3 seconds...")
-                tm.sleep(3)
+            except pika.exceptions.ConnectionClosedByBroker as e:
+                print("ERROR: Connection closed by broker")
+                raise e
+            except pika.exceptions.AMQPChannelError:
+                print("ERROR: AMQP channel error")
+                raise e
+            except pika.exceptions.AMQPConnectionError:
                 self.connect()
 
     def call(self, data: dict) -> dict:

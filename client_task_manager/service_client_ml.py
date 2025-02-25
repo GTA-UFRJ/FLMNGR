@@ -1,3 +1,4 @@
+import time as tm
 from client_task_manager.client_ml import ClientML
 from client_task_manager.process_messages_from_client_task import ForwardMessagesFromClientTask
 from microservice_interconnect.rpc_client import rpc_send, register_event
@@ -128,6 +129,7 @@ class ServiceClientML:
             return
         self.selected_task_info = candidates_tasks[0]
 
+        startDownloadTime = tm.process_time_ns()
         register_event("service_client_ml","run_task_one_policy","Started downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         task_id = self.selected_task_info.get("ID") # We assume that the received task was alredy validated at RPC library
@@ -147,6 +149,7 @@ class ServiceClientML:
             return
         
         register_event("service_client_ml","run_task_one_policy","Finished downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        register_event("service_client_ml","download_task_time",f"{tm.process_time_ns()-startDownloadTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         self.start_client_task(task_id, task_arguments)
 
@@ -154,6 +157,7 @@ class ServiceClientML:
         """
         Get client info stored in client_info dir inside workpath and sends it to the server
         """
+        startTime = tm.process_time_ns()
         register_event("service_client_ml","rpc_call_send_client_stats","Started getting client stats for sending",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         try:
@@ -175,6 +179,7 @@ class ServiceClientML:
             print(f"New info registered with success")
 
         register_event("service_client_ml","rpc_call_send_client_stats","Finished getting client stats for sending",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        register_event("service_client_ml","update_info_time",f"{tm.process_time_ns()-startTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def rpc_call_request_task(self) -> list:
         """
@@ -183,6 +188,7 @@ class ServiceClientML:
         :return: list of tasks info
         :rtype: list
         """
+        startTime = tm.process_time_ns()
         register_event("service_client_ml","rpc_call_request_task","Started requesting task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         client_info = self.client_info_handler.get_info()
@@ -192,10 +198,12 @@ class ServiceClientML:
             host=self.broker_host,
             port=self.broker_port)
         if response.get("status_code") != 200:
+            register_event("service_client_ml","rpc_call_request_task","Failed requesting task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
             print(f"Error after requesting task: {response.get("exception")}")
             return []
         else:
             register_event("service_client_ml","rpc_call_request_task","Finished requesting task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+            register_event("service_client_ml","request_task_time",f"{tm.process_time_ns()-startTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
             return response.get("return")
     
     def handle_error_from_task(self, task_id:str):
@@ -240,22 +248,26 @@ class ServiceClientML:
 
         :raises: PermissionError
         """
+        startTime = tm.process_time_ns()
         register_event("service_client_ml","start_client_task","Started client task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
         
 
         def finish_task(task_id:str):
+            startTime = tm.process_time_ns()
             register_event("service_client_ml","finish_task",f"Started handling task {task_id} finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
             
             try:
                 self.client_ml_backend.stop_task(task_id)
+                register_event("service_client_ml","finish_task",f"Finished handling task {task_id} finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+                register_event("service_client_ml","finish_task_time",f"{tm.process_time_ns()-startTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
             except Exception as e:
                 print(e)
                 register_event("service_client_ml","finish_task",f"Finished handling task {task_id} finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+                register_event("service_client_ml","finish_client_task_time",f"{tm.process_time_ns()-startTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
                 raise e
             
             self.changed_running_tasks_state = True
 
-            register_event("service_client_ml","finish_task",f"Finished handling task {task_id} finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         forwarder = ForwardMessagesFromClientTask(
             task_id,
@@ -270,6 +282,7 @@ class ServiceClientML:
         )
 
         register_event("service_client_ml","start_client_task","Finish client task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        register_event("service_client_ml","start_client_task_time",f"{tm.process_time_ns()-startTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
 if __name__ == "__main__":
 

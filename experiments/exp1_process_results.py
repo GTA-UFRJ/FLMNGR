@@ -27,6 +27,7 @@ def search_for_event_timestamp(dict_list, event_message):
     else:
         occurence = 1
     occurence_count = 0
+    i = 0 
     for i, entry in enumerate(dict_list):
         if entry.get('event') == event_message:
             occurence_count += 1

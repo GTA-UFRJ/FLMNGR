@@ -30,8 +30,8 @@ class WorkerThread(Thread):
             if not all(message):
                 continue
             method, _, body = message
-            writeLock.acquire()
             print(f"event received: {body.decode('utf-8')}")
+            writeLock.acquire()
             fd.write(bytes(f"\t{body.decode('utf-8')},\n", "utf8"))
             writeLock.release()
             channel.basic_ack(delivery_tag=method.delivery_tag)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         b.stop()
         a.join()
         b.join()
-        print("Saving file")
+        print("Killed. Saving file...")
         fd.seek(-2, os.SEEK_END)
         fd.write(bytes("\n]","utf8"))
         fd.close()
