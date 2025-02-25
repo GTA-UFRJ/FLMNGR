@@ -16,12 +16,12 @@ if __name__ == "__main__":
     ret = requests.post(
         f"http://localhost:{configs['server.gateway']['port']}/rpc_exec_create_task",headers={"Content-type":"Application/json"},
         data="""{"task_id":"4fe5",
-"host":"localhost",
-"port":8080,
-"username":"user",
-"password":"123",
-"files_paths":["client.py","task.py"]
-}""")
+                "host":"localhost",
+                "port":8080,
+                "username":"user",
+                "password":"123",
+                "files_paths":["client.py","task.py"]
+                }""")
     
     registerTime = tm.process_time_ns() - startTime
     if ret.status_code != 200:
@@ -44,4 +44,3 @@ if __name__ == "__main__":
     processTime = tm.process_time_ns() - startTime
     register_event("Operator","start_task","Finished starting a task", allow_registering=allow_register, host=host, port=port)
     register_event("Operator","operator_register_task_time",f"{processTime}", allow_registering=allow_register, host=host, port=port)
-

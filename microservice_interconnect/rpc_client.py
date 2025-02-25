@@ -12,7 +12,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-class RpcClient(metaclass=Singleton):
+class RpcClient:
     """
     Implements an RPC client for microservices communication using a
     Pika connection to the channel

@@ -33,7 +33,7 @@ echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 echo "Start cloud task manager"
-rm cloud_task_manager/db/tasks.db
+[ -f "cloud_task_manager/db/tasks.db" ] && rm cloud_task_manager/db/tasks.db
 python -u -m cloud_task_manager.service_cloud_ml > logs_${LOG_TIMESTAMP}/service_cloud_ml.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
@@ -44,17 +44,17 @@ echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 echo "Start user manager"
-rm user_manager/db/users.db
+[ -f "user_manager/db/users.db" ] && rm user_manager/db/users.db
 python -u -m user_manager.service_user_manager > logs_${LOG_TIMESTAMP}/service_user_manager.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
-echo "Create tasks E and C and run tasks E and C"
-cp -r cloud_task_manager/tasks/task_4fe5 cloud_task_manager/tasks/task_E
-sed -i 's/8080/8081/g' cloud_task_manager/tasks/task_E/client.py
-sed -i 's/8080/8081/g' cloud_task_manager/tasks/task_E/server.py
-cp -r cloud_task_manager/tasks/task_4fe5 cloud_task_manager/tasks/task_C
-python -u -m experiments.exp2_tasks_prep
+echo "Create tasks L and H and run tasks L and H"
+cp -r cloud_task_manager/tasks/task_4fe5 cloud_task_manager/tasks/task_L
+sed -i 's/8080/8081/g' cloud_task_manager/tasks/task_L/client.py
+sed -i 's/8080/8081/g' cloud_task_manager/tasks/task_L/server.py
+cp -r cloud_task_manager/tasks/task_4fe5 cloud_task_manager/tasks/task_H
+python -u -m experiments.exp3_tasks_prep
 sleep 10
 
 ## CLIENT SIDE
@@ -65,13 +65,19 @@ echo $! >>  logs_${LOG_TIMESTAMP}/pids
 sleep 1
 
 echo "Start client tasks manager" 
-rm -rf client_task_manager/tasks/*
-rm -rf client_task_manager/client_info/*
+[ -d "client_task_manager/tasks/" ] && rm -rf client_task_manager/tasks/*
+[ -d "client_task_manager/client_info/" ] && rm -rf client_task_manager/client_info/*
 python -u -m client_task_manager.service_client_ml > logs_${LOG_TIMESTAMP}/service_client_ml.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
-sleep 30
+sleep 5
+
+echo "Start second Flower client, which will trigger FL to starts"
+python -u -m cloud_task_manager.tasks.task_L.client cli &
+echo $! >>  logs_${LOG_TIMESTAMP}/pids
+sleep 120
 
 ## FINALIZATION
+
 
 cd logs_${LOG_TIMESTAMP}
 python kill_processes.py
@@ -80,9 +86,9 @@ sleep 5
 cd ..
 cp events.json logs_${LOG_TIMESTAMP}
 cp events.json experiments
-rm -r cloud_task_manager/tasks/task_E
-rm -r cloud_task_manager/tasks/task_C
+[ -d "cloud_task_manager/tasks/task_L" ] && rm -r cloud_task_manager/tasks/task_L
+[ -d "cloud_task_manager/tasks/task_H" ] && rm -r cloud_task_manager/tasks/task_H
 
 cd experiments
-echo "---- RESULTS ----" >> exp2_raw_times
-python exp2_process_results.py >> exp2_raw_times
+echo "---- RESULTS ----" >> exp3_raw_times
+python exp3_process_results.py >> exp3_raw_times
