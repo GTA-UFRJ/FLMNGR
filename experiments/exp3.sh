@@ -69,7 +69,12 @@ echo "Start client tasks manager"
 [ -d "client_task_manager/client_info/" ] && rm -rf client_task_manager/client_info/*
 python -u -m client_task_manager.service_client_ml > logs_${LOG_TIMESTAMP}/service_client_ml.log 2>&1 &
 echo $! >>  logs_${LOG_TIMESTAMP}/pids
-sleep 30
+sleep 5
+
+echo "Start second Flower client, which will trigger FL to starts"
+python -u -m cloud_task_manager.tasks.task_L.client cli &
+echo $! >>  logs_${LOG_TIMESTAMP}/pids
+sleep 120
 
 ## FINALIZATION
 

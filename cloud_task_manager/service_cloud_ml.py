@@ -99,7 +99,9 @@ class ServiceCloudML(BaseService):
         register_event("service_cloud_ml","handle_error_from_task",f"Started handling error from task {task_id}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         try:
+            self.db_handler.set_task_not_running(task_id)
             self.cloud_ml_backend.stop_task(task_id)
+
         except TaskAlredyStopped:
             print(f"Received error from task {task_id}, which was alredy stopped")
 

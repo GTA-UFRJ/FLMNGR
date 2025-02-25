@@ -48,10 +48,10 @@ if __name__ == "__main__":
                 raise Exception
 
         print("start")
-        #start_client(
-        #    server_address="127.0.0.1:8080",
-        #    client=FlowerClient().to_client(),
-        #)    
+        start_client(
+            server_address="127.0.0.1:8080",
+            client=FlowerClient().to_client(),
+        )    
         
         if sys.argv[1] != "cli":
             register_event("task_client","main","Finished client",allow_registering=allow_register,host=host,port=port)

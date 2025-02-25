@@ -24,4 +24,6 @@ if __name__ == "__main__":
     
     register_event("Operator","start_task","Started starting a task",
                    allow_registering=allow_register, host=host, port=port)
-    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"4fe5"})
+    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"4fe5"},
+            host=host,
+            port=port)
