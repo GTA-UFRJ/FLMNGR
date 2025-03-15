@@ -2,7 +2,7 @@
 
 In the repository root, verify if the script is running and generating logs without errors:
 
-```
+```bash
 bash experiments/exp1.sh
 ```
 

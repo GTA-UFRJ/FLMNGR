@@ -168,6 +168,7 @@ client_task_manager/tasks
 cloud_task_manager/db/*
 user_manager/db/*
 logs_*/*
+pids
 
 .vscode
 
