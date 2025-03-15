@@ -29,5 +29,9 @@ if __name__ == "__main__":
             host=configs["server.broker"]["host"],
             port=configs["server.broker"]["port"])
     
-    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"E"})
-    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"C"})
+    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"E"},
+                host=configs["server.broker"]["host"],
+                port=configs["server.broker"]["port"])
+    ret = rpc_send("rpc_exec_start_server_task",{"task_id":"C"},
+                host=configs["server.broker"]["host"],
+                port=configs["server.broker"]["port"])

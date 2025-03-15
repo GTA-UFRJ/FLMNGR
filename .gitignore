@@ -169,7 +169,7 @@ cloud_task_manager/db/*
 user_manager/db/*
 logs_*/*
 pids
-
+experiments/*raw_times
 .vscode
 
 # events file created by the event_reader.py script 
