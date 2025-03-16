@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Task</title>
+    <style>
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            max-width: 600px;
+        }
+        .form-grid label {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-grid button {
+            grid-column: span 2;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        function submitForm(event) {
+            event.preventDefault();
+            
+            const formData = {
+                task_id: document.getElementById("task_id").value,
+                host: document.getElementById("host").value,
+                port: parseInt(document.getElementById("port").value),
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value,
+                files_paths: document.getElementById("files_paths").value.split(",").map(s => s.trim()),
+                selection_criteria: document.getElementById("selection_criteria").value,
+                server_arguments: document.getElementById("server_arguments").value,
+                client_arguments: document.getElementById("client_arguments").value,
+                tags: document.getElementById("tags").value.split(",").map(s => s.trim())
+            };
+
+            fetch("http://localhost:9001/rpc_exec_create_task", {
+                method: "POST",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => alert("Task Created: " + JSON.stringify(data)))
+            .catch(error => alert("Error: " + error));
+        }
+    </script>
+</head>
+<body>
+    <h1>Create Task</h1>
+    <form onsubmit="submitForm(event)" class="form-grid">
+        <label>Task ID *: <input type="text" id="task_id" required></label>
+        <label>Host *: <input type="text" id="host" required></label>
+        <label>Port *: <input type="number" id="port" required></label>
+        <label>Username *: <input type="text" id="username" required></label>
+        <label>Password *: <input type="password" id="password" required></label>
+        <label>Files Paths (comma-separated): <input type="text" id="files_paths" required></label>
+        <label>Selection Criteria: <input type="text" id="selection_criteria"></label>
+        <label>Server Arguments: <input type="text" id="server_arguments"></label>
+        <label>Client Arguments: <input type="text" id="client_arguments"></label>
+        <label>Tags (comma-separated): <input type="text" id="tags"></label>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

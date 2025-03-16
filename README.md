@@ -48,50 +48,211 @@ Em **casos de modificação do código por parte do usuário**, para além do tu
 
 # Instalação
 
+O tutorial a seguir apresenta a inicialização manual dos microsserviços. Entende-se que a execução desses comandos diretamente pelo usuário, sem um script automatizado, torna mais clara a arquitetura da AGATA. Entretanto, foram disponibilizados scripts mais automatizados para execução dos experimentos posteriores, simplificando bastante o processo de instalação. Todos os comandos devem ser executados a partir da raíz do repositório.
+
+## Novo ambiente conda
+
 Crie um ambiente conda:
 
 ```bash
 conda create -n agata python=3.12.7
 ```
 
-Ative o ambiente conda toda vez que um terminal for aberto para rodar os experimentos:
+Ative o ambiente conda pela primeira vez:
+
 ```bash
 conda activate agata
 ```
 
 Instale as dependências dentro do ambiente conda:
+
 ```bash
 conda install pip
 pip install -r requirements.txt
 ```
 
-INICIAR MICROSSERVIÇOS BÁSICOS NA MÃO
+## Arquivo de configuração
+
+O arquivo `config.ini` deve ser configurado da seguinte forma:
+
+```ini
+[client.broker]
+host=localhost
+port=8000
+
+[server.broker]
+host=localhost
+port=9000
+
+[server.gateway]
+port=9001
+
+[events]
+register_events=false
+
+[client.params]
+request_interval=10
+```
+
+## Inicialização do servidor
+
+### Inicialize o broker
+
+Antes de executar o comando, verifique se um contêiner com o nome `server-broker-rabbit` existe usando `docker ps`. Se existir, será necessário interrompê-lo e deletá-lo, executando:
+
+```bash
+sudo docker stop server-broker-rabbit
+sudo docker rm server-broker-rabbit
+```
+
+O borker irá escutar na porta 9000 do hospedeiro. Então, verifique se não há outra aplicação na máquina usando a mesma porta. Em seguida, execute:
+
+```bash
+sudo docker run -d --hostname broker --rm --name server-broker-rabbit -p 9000:5672 rabbitmq:3
+```
+
+### Inicialize o gateway 
+
+Abra um novo terminal, ative o ambiente (`conda activate agata`) e execute:
+
+```bash
+python3 -u -m cloud_gateway.http_gateway
+```
+
+### Inicialize o gerenciador de usuários
+
+Abra um novo terminal, ative o ambiente (`conda activate agata`). Antes de executar o comando abaixo, apague o arquivo `user_manager/db/users.db` caso exista. Em seguida execute:
+
+```bash
+python3 -u -m user_manager.service_user_manager
+```
+
+### Inicialize o gerenciador de tarefas
+
+Abra um novo terminal, ative o ambiente (`conda activate agata`). Antes de executar o comando abaixo, apague o arquivo `cloud_task_manager/db/tasks.db` caso exista. Em seguida execute:
+
+```bash
+python3 -u -m cloud_task_manager.service_cloud_ml
+```
+
+### Inicialize o servidor de donwload do gerenciador de tarefas
+
+Abra um novo terminal, ative o ambiente (`conda activate agata`) e execute:
+
+```bash
+python3 -u -m cloud_task_manager.host_tasks $(pwd)/cloud_task_manager
+```
+
+## Inicialização do cliente
+
+### Inicialize o broker
+
+Antes de executar o comando, verifique se um contêiner com o nome `client-broker-rabbit` existe usando `docker ps`. Se existir, será necessário interrompê-lo e deletá-lo, executando:
+
+```bash
+sudo docker stop client-broker-rabbit
+sudo docker rm client-broker-rabbit
+```
+
+O borker irá escutar na porta 9000 do hospedeiro. Então, verifique se não há outra aplicação na máquina usando a mesma porta. Em seguida execute:
+
+```bash
+sudo docker run -d --hostname broker --rm --name client-broker-rabbit -p 8000:5672 rabbitmq:3
+```
+
+### Inicialize o gateway 
+
+Abra um novo terminal, ative o ambiente (`conda activate agata`) e execute:
+
+```bash
+python3 -u -m client_gateway.amqp_gateway 
+```
+
+### Inicialize o gerenciador de tarefas 
+
+Abra um novo terminal, ative o ambiente (`conda activate agata`). Este é o gerenciador de tarefas do cliente! Não é o mesmo inicializado no servidor previamente. Antes de executar o comando a seguir, delete todos os arquivos dentro dos diretórios `client_task_manager/tasks/` e `client_task_manager/client_info/`, caso existam. O primeiro diretório contém as tarefas que o cliente baixou do servidor, e o segundo contem informações do cliente usadas para identificá-lo e listar estatísticas. **Não apague os diretórios** `client_task_manager/tasks/` e `client_task_manager/client_info/`. Apague todos os arquivos e diretórios **dentro** destes diretórios. Em seguida execute: 
+
+```bash
+python3 -u -m client_task_manager.service_client_ml
+```
+
+Neste momento, o cliente começará a enviar requisições para o servidor para:
+* Registrar suas informações
+* Pedir tarefas para baixar, caso estejam disponíveis
 
 # Teste mínimo
 
-Esta seção deve apresentar um passo a passo para a execução de um teste mínimo.
-Um teste mínimo de execução permite que os revisores consigam observar algumas funcionalidades do artefato. 
-Este teste é útil para a identificação de problemas durante o processo de instalação.
+O teste mínimo depende da inicialização manual, descrita na seção anterior.
+
+## Execução de uma tarefa
+
+### Acesse a interface gráfica
+
+Em um novo terminal, execute o comando a seguir e abra o navegador web local na porta 9999 para acessar uma interface web de interação com o ambiente em nuvem.
+
+```bash
+python3 -m http.server -d cloud_web_interface 9999
+```
+
+### Registre a tarefa
+
+Clique no link `Create task` e preencha os campos do formulário conforme a imagem abaixo.
+
+Após clicar em `Submit`, o gerenciador de tarefas em nuvem irá registrar uma nova tarefa em seu banco de dados. Os arquivos desta tarefa encontram-se em `cloud_task_manager/tasks/task_4fe5/*`. O upload dos arquivos poderia ser feito acessando a opção `Upload task files` no menu inicial, mas este passo foi omitido por simplicidade.
+
+![alt text](cloud_web_interface/create_task_2.png)
+
+### Inicie a tarefa no servidor
+
+No menu iniciar, clique no link `Start task`, fornece o ID anteriormente adicionado (`4fe5`) e clique em iniciar. A tarefa deve ser iniciado no gerenciador de tarefas em nuvem. Neste momento, o gerenciador de tarefas do cliente deve baixar a tarefa e iniciá-la. 
+
+### Inicie um segundo cliente de teste
+
+O servidor da tarefa é configurado para depender de dois clientes no mínimo para avnaçar as rodadas. Assim, iremos iniciar diretamente um novo processo Flower. 
+Abra um novo terminal, ative o ambiente (`conda activate agata`) e execute:
+
+```bash
+python3 -u -m cloud_task_manager.tasks.task_4fe5.client cli
+```
+
+A tarefa deve progredir ao longo de apenas uma rodada. Ao finalizá-la, deve ser ressaltado que, automaticamente, a tarefa se torna inativa no cliente e no servidor, podendo ser disparada novamente pela interface de iniciar tarefa. 
+
+## Finalização
+
+Após o teste mínimo, os serviços podem ser interrompidos (Ctrl + c), bem como os brokers (`docker stop [nome_do_contêiner] ; docker rm [nome_do_contêiner]`). O ambiente pode ser desativado (`conda deactivate`).
 
 # Experimentos
 
-Antes de executar o primeiro experimento, garanta a finalização de qualquer processo Python anteriormente iniciado neste artefato. Não se preocupe que contêineres serão finalziados e os bancos de dados serão deletados pelos scripts dos experimentos. O mais importante é que nenhum micorsserviço Python esteja iniciado, para evitar conflitos de porta de rede, por exemplo.
+Os experimentos são executados por scripts automatizados. Antes de executar o primeiro experimento, garanta a finalização de qualquer processo Python anteriormente iniciado neste artefato. Não se preocupe que contêineres serão finalziados e os bancos de dados serão deletados pelos scripts dos experimentos. O mais importante é que nenhum micorsserviço Python esteja iniciado, para evitar conflitos de porta de rede, por exemplo.
+
+## Modificações nas configurações
+
+Modifique a seguinte linha do arquivo `config.ini`:
+
+```ini
+[events]
+register_events=ture
+```
 
 ## Experimento 1 
 
 Para executar o primeiro experimento, descrito no início deste artefato, execute
+
 ```bash
+conda activate agata
 bash experiments/exp1.sh
 ```
 
-A permissão de superusuário será pedida para executar o Docker. O experimento demora certa de 4 minutos. O revisor pode acompanhar no terminal a impressão do andamento do experimento. Os resultados mais interessantes são:
+A permissão de superusuário será pedida para executar o Docker. O experimento demora certa de 4 minutos. O revisor pode acompanhar no terminal a impressão do andamento do experimento. Detalhes sobre o experimento são encontrados no artigo. O registro e a inicialização de tarefas ocorre por linha de comando, ao invés de interface gráfica. Os resultados mais interessantes são:
 * O arquivo `experiments/events.json` apresenta, em ordem de momento de execução, as principais etapas necessárias para a execução da tarefa de aprendizado federado, bem como a estampa de tempo correspondente e o componente onde ocorrem
 * O arquivo `experiments/exp1_raw_times` resume o tempo para as operações mais importantes
 
 ## Experimento 2
 
 Para executar o primeiro experimento, descrito no início deste artefato, execute
+
 ```bash
+conda activate agata
 bash experiments/exp2.sh
 ```
 
