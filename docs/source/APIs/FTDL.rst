@@ -1,9 +1,6 @@
 Flower Tasks Daemon Library (FTDL)
 ===================================
 
-This is a library for starting a Flower task as a child process. It also receives information from this task for logging and for finishing the task.
-The task initializers uppon execution, create a Flower child process that reports message to the task initializer using a UDP socket (client is the task reporter and server is the task listener).
-
 Task
 -----
 

@@ -204,7 +204,7 @@ Após clicar em `Submit`, o gerenciador de tarefas em nuvem irá registrar uma n
 
 ### Inicie a tarefa no servidor
 
-No menu iniciar, clique no link `Start task`, fornece o ID anteriormente adicionado (`4fe5`) e clique em iniciar. A tarefa deve ser iniciado no gerenciador de tarefas em nuvem. Neste momento, o gerenciador de tarefas do cliente deve baixar a tarefa e iniciá-la. 
+No menu iniciar, clique no link `Start task`, fornece o ID anteriormente adicionado (`4fe5`) e deixando o campo de argumentos vazio. Ao submeter o formulário, a tarefa deve ser iniciado no gerenciador de tarefas em nuvem. Neste momento, o gerenciador de tarefas do cliente deve baixar a tarefa e iniciá-la. 
 
 ### Inicie um segundo cliente de teste
 
@@ -283,6 +283,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+# Equivalência de terminologias
+
+| Artigo (PT)    | Código (EN) |
+| ------------------------ | ------------------ |
+| Gerenciador de tarefas em nuvem | Cloud task manager|
+| Gerenciador de tarefas embarcado | Client task manager|
+| Gateway do client | Client gateway |
+| Gateway em nuvem | Cloud gateway |
+| Gerenciador de clientes | User manager |
+| Aplicação de gerenciamento | Cloud web interface |
+| MicrosserviçoBase | BaseService |
+| Biblioteca de Suprocessos Flower (BSF) | Flower Task Daemon Lib (FTDL) |
+| bsf.Mensageiro | task_reporter.TaskReporter |
+| msg.envia_info | task_reporter.send_info |
+| msg.dispara_gatilho | task_reporter.trigger |
+| msg.envia_erro | task_reporter.send_error |
+| ClienteRPC | RpcClient |
+| atualiza_info | rpc_exec_update_info |
+| lê_info_cliente | rpc_exec_get_user_info |
+| cria_tarefa | rpc_exec_create_task |
+| inicia_tarefa | rpc_exec_start_server_task |
+| pede_tarefa | rpc_exec_client_requesting_task |
+| download_cod | download_file |
 
 # Documentação
 

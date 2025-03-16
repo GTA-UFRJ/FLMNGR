@@ -1,8 +1,5 @@
-Modules 
-=======
-
-This page references multiple modules and their uses. 
-
+APIs
+==== 
 
 .. toctree:: 
    :maxdepth: 2
@@ -10,3 +7,5 @@ This page references multiple modules and their uses.
 
    FTDL
    CloudTaskManager
+   ClientTaskManager
+   UserManager
