@@ -10,7 +10,18 @@ Em ambos os casos, os resultados são apresentados nos arquivos `experiments/eve
 
 # Estrutura do README.md
 
-
+<ul>
+    <li><a href="#selos-considerados">Selos considerados</a></li>
+    <li><a href="#informações-básicas">Informações básicas</a></li>
+    <li><a href="#dependências">Dependências</a></li>
+    <li><a href="#preocupações-com-segurança">Preocupações com segurança</a></li>
+    <li><a href="#instalação">Instalação</a></li>
+    <li><a href="#teste-mínimo">Teste mínimo</a></li>
+    <li><a href="#experimentos">Experimentos</a></li>
+    <li><a href="#license">LICENSE</a></li>
+    <li><a href="#equivalencia">Equivalência de terminologias</a></li>
+    <li><a href="#documentação">Documentação</a></li>
+</ul>
 
 # Selos considerados
 
