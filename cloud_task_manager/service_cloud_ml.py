@@ -68,6 +68,12 @@ class ServiceCloudML(BaseService):
             schema=self._get_schema("rpc_exec_update_task"),
         )
 
+        self.add_api_endpoint(
+            func=self.rpc_exec_get_task_by_id,
+            func_name="rpc_exec_get_task_by_id",
+            schema=self._get_schema("rpc_exec_get_task_by_id"),
+        )
+
         register_event("service_cloud_ml","main","Started",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def _get_schema(self, func_name: str) -> dict:
@@ -324,6 +330,10 @@ class ServiceCloudML(BaseService):
         register_event("service_cloud_ml","rpc_call_query_client_info","Finished querying client info",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         return response["return"]
+    
+    def rpc_exec_get_task_by_id(self, received:dict):
+        task_dict = self.db_handler.query_task(received.get("task_id"))
+        return task_dict
 
 if __name__ == "__main__":
     configs = configparser.ConfigParser()

@@ -218,7 +218,7 @@ Clique no link `Create task` e preencha os campos do formulário conforme a imag
 
 Após clicar em `Submit`, o gerenciador de tarefas em nuvem irá registrar uma nova tarefa em seu banco de dados. Os arquivos desta tarefa encontram-se em `cloud_task_manager/tasks/task_4fe5/*`. O upload dos arquivos poderia ser feito acessando a opção `Upload task files` no menu inicial, mas este passo foi omitido por simplicidade.
 
-![alt text](cloud_web_interface/create_task_2.png)
+![alt text](create_task_2.png)
 
 ### Inicie a tarefa no servidor
 

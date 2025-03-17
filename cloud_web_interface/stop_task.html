@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stop Task</title>
+    <style>
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            max-width: 600px;
+        }
+        .form-grid label {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-grid button {
+            grid-column: span 1;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        function submitForm(event) {
+            event.preventDefault();
+            
+            const formData = {
+                task_id: document.getElementById("task_id").value
+            };
+
+            fetch("http://localhost:9001/rpc_exec_stop_server_task", {
+                method: "POST",
+		mode: "cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => alert("Task Stopped: " + JSON.stringify(data)))
+            .catch(error => alert("Error: " + error));
+        }
+    </script>
+</head>
+<body>
+    <h1>Stop Task</h1>
+    <form onsubmit="submitForm(event)" class="form-grid">
+        <label>Task ID: <input type="text" id="task_id" required></label><br>
+        <button type="submit">Stop Task</button>
+    </form>
+</body>
+</html>
