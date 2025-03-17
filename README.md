@@ -1,12 +1,12 @@
 # AGATA - Arquitetura para Gerenciamento Automático de Tarefas de Aprendizado Federado 
 
-O objetivo deste artefato é exemplificar o uso da ferramenta AGATA através de dois experimentos: 
+O objetivo deste artefato é exemplificar o uso da ferramenta AGATA através de um exemplo básico e dois experimentos: 
+
+* O exemplo básico envolve a inicialização manual dos microsserviços e a inicialização de uma tarefa por uma interface web.
 
 * O primeiro experimento inicializa os microsserviços do servidor e, em seguida, cria e inicializa uma tarefa simples de aprendizado no servidor, executado na máquina local. Depois, ocorre a inicialização dos microsserviços do cliente na mesma máquina. Com isso, ocorre a trasferência automática da tarefa para o cliente.
 
 * O segundo experimento se diferencia do primeiro ao inicializar uma tarefa com erro (E) e outra correta (C). O cliente, após ocorrer um erro em E, automaticamente troca a tarefa para C.
-
-Em ambos os casos, os resultados são apresentados nos arquivos `experiments/events.json`, `experiments/exp_*_raw_times` e `logs_*/*`.
 
 # Estrutura do README.md
 
@@ -25,7 +25,7 @@ Em ambos os casos, os resultados são apresentados nos arquivos `experiments/eve
 
 # Selos considerados
 
-Os 4 selos são considerados:
+Os autores reinvidicam os seguintes selos:
 
 * Artefatos Disponíveis (SeloD);
 * Artefatos Funcionais (SeloF);
@@ -37,19 +37,26 @@ Os 4 selos são considerados:
 Os experimentos foram executados em diferentes máquinas físicas e virtuais, com as seguintes especificações:
 * VM com 4 CPUs, 8GB de memória RAM e Debian 12, instanciadas em um servidor com CPU Intel Xeon E5-2650, 8 núcleos e 16 threads, 2,80GHz e 32GB de RAM. 
 * PC com Intel i9-10900, CPU de 2.80 GHz, 20 threads, 32GB de RAM, e Ubuntu 20.04.
-* Notebook com Intel i5-8250U , CPU de 3.40 GHz, 8 threads, 8GB de RAM, e Ubuntu 20.04.
 
-Uma vez que em todas as configurações não foi observada nenhuma dificuldade com desempenho, assume-se a execução é garantida sob as seguintes condições:
+Uma vez que em todas as configurações não foi observada nenhuma dificuldade com desempenho, assume-se a execução é recomendada sob as seguintes condições:
 * Sistema Operacional Ubuntu 20.04 ou Debian 12
-* CPU mínima: Intel i5 de 8ª Geração
-* Memória mínima: 8GB
+* Mínimo 4 CPUs 2.8GHz
+* Mínimo 8GB de RAM
 
 # Dependências
 
 Os requisitos são:
+* Git
 * Python 3.12.7 
 * Conda (miniconda3)
 * Docker 24.0.7
+
+Clone o repositório do projeto no GitHub
+
+```bash
+git clone git@github.com:GTA-UFRJ/FLMNGR.git
+cd FLMNGR
+```
 
 # Preocupações com segurança
 
@@ -245,6 +252,8 @@ Modifique a seguinte linha do arquivo `config.ini`:
 register_events=ture
 ```
 
+Em ambos os experimentos, os resultados são apresentados nos arquivos `experiments/events.json`, `experiments/exp_*_raw_times` e `logs_*/*`.
+
 ## Experimento 1 
 
 Para executar o primeiro experimento, descrito no início deste artefato, execute
@@ -260,7 +269,7 @@ A permissão de superusuário será pedida para executar o Docker. O experimento
 
 ## Experimento 2
 
-Para executar o primeiro experimento, descrito no início deste artefato, execute
+Para executar o segundo experimento, descrito no início deste artefato, execute
 
 ```bash
 conda activate agata
