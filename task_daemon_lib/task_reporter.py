@@ -43,8 +43,8 @@ class TaskReporter:
         """
         Format: {"type":"print","message":msg}
 
-        :param message: a log, or generic message
-        :type message: str
+        :param msg: a log, or generic message
+        :type msg: str
         """
         message = {
             "type": "print",

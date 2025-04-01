@@ -58,11 +58,11 @@ def download_task_training_files(
     :param download_server_url: URL in the format http://{hostname or IP}:{port}
     :type download_server_url: str
 
-    :raise: TaskDownloadGenericError
+    :raises TaskDownloadGenericError: received status 50X, which suggests an internal server error
 
-    :raise: TaskDownloadAuthFail
+    :raises TaskDownloadAuthFail: invalid username and password
     
-    :raise: TaskNotFoundInServer
+    :raises TaskNotFoundInServer: task files not found in server
     """
     
     task_path = os.path.join(work_path,f"task_{task_id}")

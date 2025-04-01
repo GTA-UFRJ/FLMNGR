@@ -6,10 +6,12 @@ response = rpc_send("rpc_exec_a", {"arg_1":3,"arg_2":"whatever"},
 pprint(response)
 input("press enter...")
 
-response = rpc_send("rpc_exec_a", {"arg_1":"aaaaaa","arg_2":""})
+response = rpc_send("rpc_exec_a", {"arg_1":"aaaaaa","arg_2":""},
+                    host="localhost", port=5000)
 pprint(response)
 input("press enter...")
 
-response = rpc_send("rpc_exec_a_bug", {"arg_1":3})
+response = rpc_send("rpc_exec_a_bug", {"arg_1":3},
+                    host="localhost", port=5000)
 pprint(response)
 input("press enter...")

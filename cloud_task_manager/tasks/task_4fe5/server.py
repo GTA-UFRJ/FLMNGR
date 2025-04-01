@@ -41,7 +41,7 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     comm_round += 1
 
     acc = sum(val_accuracies) / sum(examples)
-    if acc >= 0.5:
+    if acc >= 0.1:
         task_reporter.trigger("trigger_example",str(acc))
 
     #if acc <= 0.6 and comm_round == 10:

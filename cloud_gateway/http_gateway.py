@@ -2,6 +2,7 @@ import configparser
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # Importando CORS
 from microservice_interconnect.rpc_client import rpc_send, register_event
+from flask.wrappers import Response
 
 app = Flask(__name__)
 CORS(app)  # Habilitando CORS para todas as rotas
@@ -14,7 +15,16 @@ rpc_port = int(configs["server.broker"]["port"])
 allow_register = configs.getboolean("events", "register_events")
 
 @app.route("/<function_name>", methods=["POST", "OPTIONS"])
-def rpc_handler(function_name):
+def rpc_handler(function_name:str)->Response:
+    '''
+    Forward HTTP request to corresponding queue identified by route/function
+    
+    :param function_name: RPC function name, specified in the HTTP header
+    :type function_name: str
+
+    :return: response
+    :rtype: flask.wrappers.Response
+    '''
     if request.method == "OPTIONS":
         return _build_cors_preflight_response()
     
@@ -40,7 +50,6 @@ def rpc_handler(function_name):
         return jsonify({"status_code": 500, "exception": str(e)}), 500
 
 def _build_cors_preflight_response():
-    """Retorna a resposta para requisições OPTIONS (CORS Preflight)."""
     response = jsonify({"message": "CORS preflight response"})
     response.headers.add("Access-Control-Allow-Origin", "*")  # Permite qualquer origem
     response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")  # Métodos permitidos

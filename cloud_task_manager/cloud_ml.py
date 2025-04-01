@@ -22,11 +22,11 @@ class CloudML:
 
         :param server_side_task_object: task handler, used to run and stop process
         :type server_side_task_object: ServerSideTask
-        
-        :raises: TaskIdAlredyInUse
 
         :return: inserted task object 
         :rtype: ServerSideTask
+        
+        :raises TaskIdAlredyInUse: try to insert repeated task
         """
         if task_id in self.task_id_to_task_object_map:
             raise TaskIdAlredyInUse(task_id)
@@ -39,11 +39,11 @@ class CloudML:
         
         :param task_id: task ID
         :type task_id: str
-        
-        :raises: TaskIdNotFound
 
         :return: removed task object 
         :rtype: ServerSideTask
+        
+        :raises TaskIdNotFound: try to remove a task that was not found
         """
         try:
             return self.task_id_to_task_object_map.pop(task_id)
@@ -63,13 +63,13 @@ class CloudML:
         :param arguments: string to append to the command with arguments separated by " "
         :type arguments: str
         
-        :raises: FileNotFoundError 
+        :raises FileNotFoundError: "{work_path}/tasks/task_{task_id}/server.py" does not exist
         
-        :raises: TaskIdAlredyInUse
+        :raises TaskIdAlredyInUse: could not start a task that is alredy in the map
 
-        :raises: TaskAlredyRunning
+        :raises TaskAlredyRunning: try to start a task that was not stopped
 
-        :raises: PermissionError
+        :raises PermissionError: doesn't have permission to run the task script
         """
         if arguments is None:
             arguments_list = None
@@ -93,9 +93,9 @@ class CloudML:
         :param task_id: task ID
         :type task_id: str
         
-        :raises: TaskIdNotFound 
+        :raises TaskIdNotFound: task to be stopped is not registerd
         
-        :raises: TaskAlredyStopped
+        :raises TaskAlredyStopped: try to stop a task that was alredy stopped
         """
         print(f"Stop task {task_id}")
         server_side_task_object = self._remove_task_from_map(task_id)
@@ -105,7 +105,6 @@ class CloudML:
         """
         Finishes all tasks
         """
-
         print("Stopping all tasks!")
         tasks_list = self.task_id_to_task_object_map.copy().keys()
         for task_id in tasks_list:

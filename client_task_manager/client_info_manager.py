@@ -8,6 +8,9 @@ class ClientInfoManager:
 
     :param workpath: project location, within which "client_info" dir will reside
     :type workpath: str
+
+    :param id: client ID
+    :type id: str
     """
     def __init__(self, work_path:str, id:str) -> None:
         client_info_dir_path = os.path.join(work_path, 'client_info')
@@ -19,14 +22,14 @@ class ClientInfoManager:
 
     def get_info(self)->dict:
         """
-        Returns JSON read from "{workpath}/client_info/info.json"
+        Returns JSON read from "{workpath}/client_info/{client_id}_info.json"
         
         :return: JSON with client info or None
         :rtype: dict 
 
-        :raises: FileNotFoundError
+        :raises FileNotFoundError: client info file not found 
 
-        :raises: JSONDecodeError
+        :raises JSONDecodeError: client info file invalid format
         """
         with open(self.client_info_file_path,'r') as f:
             complete_info = json.load(f)
@@ -39,9 +42,9 @@ class ClientInfoManager:
         :return: JSON with client info or None
         :rtype: dict 
 
-        :raises: FileNotFoundError
+        :raises FileNotFoundError: client info file not found 
 
-        :raises: JSONDecodeError
+        :raises JSONDecodeError: client info file invalid format
         """
         if self.has_changed:
             self.has_changed = False
@@ -55,8 +58,6 @@ class ClientInfoManager:
         
         :param client_info: JSON with client info
         :type client_info: dict 
-
-        :raises: FileNotFoundError
         """
         with open(self.client_info_file_path,'w') as f:
             json.dump(client_info, f)
@@ -69,9 +70,9 @@ class ClientInfoManager:
         :param client_info_to_change: JSON with just client info that may change
         :type client_info_to_change: dict 
 
-        :raises: FileNotFoundError
+        :raises FileNotFoundError: client info file not found 
 
-        :raises: JSONDecodeError
+        :raises JSONDecodeError: client info file invalid format
         """
         if client_info_to_change is None:
             return

@@ -13,10 +13,10 @@ class Task:
     :param work_path: project location, within which "tasks" dir resides
     :type work_path: str
 
-    :param task_id: hexadecimal number identifying task. If there is no directory name "{work_path}/tasks/task_{task_id}", exception is raised
+    :param task_id: hexadecimal number identifying task
     :type task_id: str
 
-    :raises: FileNotFoundError 
+    :raises FileNotFoundError: no directory named "{work_path}/tasks/task_{task_id}"
     """
     def __init__(self, work_path: str, task_id: str, enable_listener:bool=True) -> None:
         self.work_path = work_path
@@ -54,10 +54,13 @@ class Task:
         
         :param arguments: CLI args after "python3 {filename} {work_path} ..."
         :type arguments: list[str]
+        
+        :param add_work_path: if true, call "python3 {filename} {work_path} {args}". Else, call "python3 {filename} {args}"
+        :type add_work_path: bool
 
-        :raises: TaskAlredyRunning
+        :raises TaskAlredyRunning: starting a task that is alredy running
 
-        :raises: PermissionError
+        :raises PermissionError: doesn't have permission to run the task script  
         """
         if self.running:
             raise TaskAlredyRunning(self.task_id)
@@ -87,7 +90,7 @@ class Task:
         """
         Stop child process started before, as well as the message listener
 
-        :raises: TaskAlredyStopped
+        :raises TaskAlredyStopped: stopping a task that is not running
         """
         if (not self.running) or (not self.process):
             raise TaskAlredyStopped(self.task_id)

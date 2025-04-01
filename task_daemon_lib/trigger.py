@@ -9,6 +9,9 @@ class Trigger(Task):
     :param work_path: project location, within which "tasks" dir resides. If "{work_path}/tasks/task_{task_id}/{trigger_id}" does not exist, raises Exception
     :type work_path: str
 
+    :param task_id: especifies the task that triggered
+    :type task_id: str
+
     :param trigger_id: name of trigger Python code file 
     :type trigger_id: str
 

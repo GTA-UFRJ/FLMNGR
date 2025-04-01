@@ -11,7 +11,10 @@ class ForwardMessagesFromTask:
     :param task_id: task ID
     :type task_id: str
 
-    :param uppon_receiving_error: function that receives task ID for finishing it 
+    :param uppon_receiving_error: function that receives task ID for finishing it when "Finished" is received
+    :type uppon_receiving_error: Callable[[str],None]
+
+    :param uppon_receiving_error: function that receives task ID when an error happens
     :type uppon_receiving_error: Callable[[str],None]
     """
     def __init__(self, task_id:str, uppon_receiving_error: Callable[[str],None], uppon_receiving_finish: Callable[[str],None], work_path:str):
@@ -27,7 +30,7 @@ class ForwardMessagesFromTask:
         :param message: received message that can be anything
         :type message: bytes
 
-        :raises: TaskUnknownMessageType
+        :raises TaskUnknownMessageType: value corresponding to key "type" is not model, info, message, exception, or trigger
         """
         message_type = message.get("type")
         if message_type == "model":
@@ -81,6 +84,10 @@ class ForwardMessagesFromTask:
 
         :param trigger_arguments: arguments for running trigger
         :type trigger_arguments: str
+
+        :raises: FileNotFoundError
+
+        :raises: PermissionError
         """
         try:
             print(f"Received trigger from task {self.task_id}: {trigger_name} {trigger_arguments}")
@@ -90,12 +97,30 @@ class ForwardMessagesFromTask:
             print(f"Could not run trigger: {e}")
 
     def process_model(self, message: dict):
+        """
+        Receives info from model for printing it
+
+        :param message: JSON message representing model information
+        :type message: dict 
+        """
         pprint(message)
  
     def process_info(self, info: str):
+        """
+        Receives generic textual info. If "Finished", call finishing function 
+
+        :param info: textual information to print
+        :type info: str 
+        """
         if info == "Finished":
             print(f"Received finish info from task {self.task_id}")
             self.uppon_receiving_finish(self.task_id)
 
     def process_print(self, message: str):
+        """
+        Receives text for printing with "P " in front
+
+        :param message: message for printing
+        :type message: str 
+        """
         print("P ", message["message"])

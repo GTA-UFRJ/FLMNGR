@@ -26,7 +26,7 @@ class ForwardMessagesFromClientTask:
         :param message: received message that can be anything
         :type message: bytes
 
-        :raises: TaskUnknownMessageType
+        :raises TaskUnknownMessageType: value corresponding to key "type" is not model, info, message, exception, or trigger
         """
         message_type = message.get("type")
         if message_type == "model":

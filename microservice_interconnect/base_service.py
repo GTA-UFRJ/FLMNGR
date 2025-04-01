@@ -12,23 +12,39 @@ class BaseService:
     Generic service
     Other services are built as child of this one
     Implements registration and queue management for RabbitMQ
+    
+    :param hide_error_info: if True, internal errors are not forwarded to client
+    :type hide_error_info: bool
+
+    :param broker_host: IP or hostname of RPC broker
+    :type broker_host: str
+    
+    :param broker_port: RPC broker port
+    :type broker_port: int
     """
     def __init__(
             self, 
             hide_error_info:bool=False, 
-            broker_host="localhost",
-            broker_port=5672) -> None:
+            broker_host:str="localhost",
+            broker_port:int=5672) -> None:
         self.broker_host = broker_host
         self.broker_port = broker_port
         self.hide_error_info = hide_error_info
         self.func_name_to_func_and_schema_map = {}
+        self.background = None
 
     def add_api_endpoint(self, func_name:str, schema: Dict[str, Any], func: Any):
         """
-        Register a new API function execution uppon receiving certain JSON 
+        Register a new function to be executed uppon receiving RPC call 
 
-        :param schema: expected JSON schema
-        :param func: function to be executed 
+        :param func_name: name of the function to be executed
+        :type func_name: str
+
+        :param schema: JSON schema
+        :type schema: dict
+
+        :param func: function to be executed
+        :type func: Any
         """
         self.func_name_to_func_and_schema_map[func_name] = {
             "func":func,
@@ -54,26 +70,22 @@ class BaseService:
         props: pika.spec.BasicProperties,
         body: bytes
     ) -> None:
-        """
-        Handle incoming RPC requests.
-
-        :param ch: channel
-        :param method: communication method
-        :param props: message properties
-        :param body: message body
-        """
-
         response = self._process_generic_request(body, func_name=props.type)
         self._send_response(ch, props, method, response)
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def _process_generic_request(self, body:str, func_name:str) -> str:
         """
-        Process received HTTP body, calling child processing function
+        Process received HTTP body, calling corresponding registered function implemented in child
 
-        :param body: HTTP request body as a string
+        :param body: HTTP request body
+        :type body: str
 
-        :return: HTTP response body as a string
+        :param func_name: name of the function to be executed
+        :type func_name: str
+
+        :return: HTTP response body
+        :rtype: str
         """
         rcv_data = json.loads(body)
         print(f"Received {func_name} / {rcv_data}")
@@ -133,7 +145,14 @@ class BaseService:
         )
 
     def start(self, background:bool=False):
+        """
+        Start listening to queues for RPC requests. Each queue corresponds to a function beeing called
 
+        NOTE: background = True is not recommended because of lack of testing 
+
+        :param background: if True, a thread will be created and the function will be non-blocking 
+        :type background: bool
+        """
         self.connection = pika.SelectConnection(
             pika.ConnectionParameters(
                 host=self.broker_host, 
@@ -143,10 +162,21 @@ class BaseService:
 
         print("Starting service...")
         if background:
-            service_thread = threading.Thread(target=self.connection.ioloop.start)
-            service_thread.start()
+            self.background = True
+            self.service_thread = threading.Thread(target=self.connection.ioloop.start)
+            self.service_thread.start()
         else:
+            self.background = False
             self.connection.ioloop.start()
 
     def stop(self):
-        self.connection.close()
+        """
+        Stops the microsservice from listing to RPC queues
+        """
+        if self.background is None:
+            return
+        elif self.background is False:
+            self.connection.close()
+        else: # self.background is True
+            self.connection.close()
+            self.service_thread.join()

@@ -7,8 +7,11 @@ class ClientSideTask(Task):
     """
     Interface for running Flower client code as a child process
 
-    :param work_path: project location, within which "tasks" dir resides. If "{work_path}/tasks/task_{task_id}/client.py" does not exist, raises Exception
+    :param work_path: project location, within which "tasks" dir resides. 
     :type work_path: str
+
+    :param task_id: task ID
+    :type task_id: str
 
     :param messange_handler: handler function for receiving bytes sent by process
     :type task_id: Callable[[bytes],None]
@@ -16,7 +19,7 @@ class ClientSideTask(Task):
     :param arguments: CLI args after "python3 {filename} {work_path} ..."
     :type arguments: list[str]
 
-    :raises: FileNotFoundError 
+    :raises FileNotFoundError: "{work_path}/tasks/task_{task_id}/client.py" does not exist
     """
     def __init__(self, work_path: str, task_id: str, messange_handler:Callable[[bytes],None], arguments: list[str] = None) -> None:
         super().__init__(work_path, task_id)
@@ -36,9 +39,9 @@ class ClientSideTask(Task):
         Run "{work_path}/tasks/task_{task_id}/client.py" as a subprocess and starts message 
         listener, which calls self.message_handler(bytes) uppon receiving bytes from child
         
-        :raises: TaskAlredyRunning
+        :raises TaskAlredyRunning: starting a task that is alredy running
 
-        :raises: PermissionError
+        :raises PermissionError: doesn't have permission to run the task script  
         """
         self.run_task(
             self.client_main_file_name, 
@@ -49,7 +52,7 @@ class ClientSideTask(Task):
         """
         Stop process and message listener
 
-        :raises: TaskAlredyStopped
+        :raises TaskAlredyStopped: stopping a task that is not running
         """
         self.stop_task()
 

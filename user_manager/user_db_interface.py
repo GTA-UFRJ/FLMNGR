@@ -12,8 +12,8 @@ class UserDbInterface:
     """
     User DB handler
 
-    :param workpath: project location
-    :type workpath: str
+    :param work_path: project location
+    :type work_path: str
     """
     def __init__(self, work_path: str):
         self.db_path = os.path.join(work_path,"db/users.db")
@@ -116,7 +116,7 @@ class UserDbInterface:
         :param avg_discon_per_round: avarege number of disconnections along tasks rounds (optional) 
         :type avg_discon_per_round: float 
         
-        :raises: sqlite3.IntegrityError
+        :raises sqlite3.IntegrityError: could not perform DB statement
         """
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
@@ -166,13 +166,13 @@ class UserDbInterface:
         
         :param user_id: the ID of the user to query.
         :type user_id: str
+
+        :raises sqlite3.Error: could not perform DB statement
+
+        :raises UserNotRegistered: user not found
         
         :return: a dictionary with user attributes and sensors list, or None if the user does not exists.
         :rtype: dict
-
-        :raises: sqlite3.Error
-
-        :raises: UserNotRegistered
         """    
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
@@ -277,9 +277,9 @@ class UserDbInterface:
         :param insert_if_dont_exist: insert new user if it does not exist. Neve raises UserNotRegistered
         :type insert_if_dont_exist: bool
 
-        :raises: sqlite3.Error
+        :raises sqlite3.Error: could not perform DB statement
 
-        :raises: UserNotRegistered
+        :raises UserNotRegistered: user not found
         """
         if not user_id:
             return

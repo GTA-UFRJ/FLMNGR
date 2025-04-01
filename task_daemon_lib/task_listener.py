@@ -42,9 +42,8 @@ class TaskMessageListener:
         """
         Creates a thread for listening pipes and forwarding bytes to handler
 
-        :raises: Exception
+        :raises Exception: error
         """
-        # Don't know what errors can occur
         self.exit_loop = False
         self.thread = threading.Thread(target=self._listen)
         self.thread.start()
@@ -57,8 +56,6 @@ class TaskMessageListener:
         Depending on the received message, the handler function can kill the process
         and, therefore, kill this thread. This would cause a thread to terminate
         itself, which is not allowed (RuntimeError). This case is handled.
-
-        :raises: Exception
         """
         self.exit_loop = True
         if self.thread:

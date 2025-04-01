@@ -164,10 +164,10 @@ class TasksDbInterface:
         :param files_paths: list of files path that will be downloaded and used by client  
         :type files_paths: list        
         
-        :param tags: A list of tags associated with the task (optional).
+        :param tags: list of tags associated with the task (optional).
         :type tags: list[str]
 
-        :raises: sqlite3.IntegrityError
+        :raises sqlite3.IntegrityError: could not perform DB statement
         """
         if selection_criteria is None:
             selection_criteria = ''
@@ -209,12 +209,12 @@ class TasksDbInterface:
         """
         Set a task as running by its ID.
         
-        :param task_id: The ID of the task to update
+        :param task_id: ID of the task to update
         :type task_id: str
 
-        :raises: sqlite3.Error
+        :raises sqlite3.IntegrityError: could not perform DB statement
 
-        :raises: TaskNotRegistered
+        :raises TaskNotRegistered: task not found
         """
         if self.query_task(task_id) is None:
             raise TaskNotRegistered(task_id)
@@ -244,12 +244,12 @@ class TasksDbInterface:
         """
         Set a task as not running by its ID.
         
-        :param task_id: The ID of the task to update
+        :param task_id: ID of the task to update
         :type task_id: str
 
-        :raises: sqlite3.Error
+        :raises sqlite3.IntegrityError: could not perform DB statement
 
-        :raises: TaskNotRegistered
+        :raises TaskNotRegistered: task not found
         """
         if self.query_task(task_id) is None:
             raise TaskNotRegistered(task_id)
@@ -313,15 +313,15 @@ class TasksDbInterface:
         """
         Query a task by its ID, including all associated attributes and tags.
         
-        :param task_id: The ID of the task to query.
+        :param task_id: ID of the task to query.
         :type task_id: str
+
+        :raises sqlite3.IntegrityError: could not perform DB statement
+
+        :raises TaskNotRegistered: task not found
         
-        :return: A dictionary with task details and associated tags, or None if the task does not exist.
+        :return: dictionary with task details and associated tags, or None if the task does not exist
         :rtype: dict
-
-        :raises: sqlite3.Error
-
-        :raises: TaskNotRegistered
         """    
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
@@ -361,7 +361,7 @@ class TasksDbInterface:
         """
         Retrieve a dictionary mapping each task ID to its selection criteria.
         
-        :return: A dictionary where keys are task IDs and values are selection criteria.
+        :return: dictionary where keys are task IDs and values are selection criteria.
         :rtype: dict
         """
         connection = sqlite3.connect(self.db_path)
@@ -421,9 +421,9 @@ class TasksDbInterface:
         :param password: clear password used by the client to download task files
         :type password: str
 
-        :raises: sqlite3.Error
+        :raises sqlite3.IntegrityError: could not perform DB statement
 
-        :raises: TaskNotRegistered
+        :raises TaskNotRegistered: task not found
         """
         if not task_id:
             return

@@ -171,6 +171,7 @@ logs_*/*
 pids
 experiments/*raw_times
 .vscode
+.history
 
 # events file created by the event_reader.py script 
 events.json

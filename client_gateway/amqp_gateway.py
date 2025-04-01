@@ -13,14 +13,29 @@ class CloudOperationFailed(Exception):
 class ServiceAmqpGateway(BaseService):
     """
     Redirect AMQP messages from client broker to HTTP cloud gateway
+
+    :param workpath: project location, within which "tasks" and "client_info" directories reside
+    :type workpath: str
+
+    :param client_broker_host: hostname or IP of the broker at the client
+    :type client_broker_host: str
+
+    :param client_broker_port: port of the broker at the client
+    :type client_broker_port: int
+
+    :param cloud_gateway_host: hostname or IP of the gateway at the cloud
+    :type cloud_gateway_host: str
+
+    :param cloud_gateway_port: port of the gateway at the cloud
+    :type cloud_gateway_port: int
     """
     def __init__(
             self,
             workpath: str,  
-            client_broker_host="localhost", 
-            client_broker_port=5672,
-            cloud_gateway_host="localhost", 
-            cloud_gateway_port=5672) -> None:
+            client_broker_host:str="localhost", 
+            client_broker_port:int=5672,
+            cloud_gateway_host:str="localhost", 
+            cloud_gateway_port:int=5672) -> None:
         super().__init__(broker_host=client_broker_host, broker_port=client_broker_port)
 
         self.broker_host = client_broker_host
@@ -44,26 +59,10 @@ class ServiceAmqpGateway(BaseService):
         register_event("client_gateway","main","Started",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
     def _get_schema(self, func_name: str) -> dict:
-        """
-        Read JSON schema from file
-
-        :param func_name: JSON message name
-        :type func_name: str
-
-        :return: JSON
-        :rtype: dict
-
-        :raises: OSError
-
-        :raises: json.JSONDecodeErrorpc_exec_update_user_infor
-        """
         with open(os.path.join(self.workpath, "schemas", f"{func_name}.json")) as f:
             return json.load(f)
 
     def _redirect_json_to_url(self, url:str, data:dict) -> dict:
-        """
-        Send JSON data to URL using HTTP and returns JSON response  
-        """
         response = requests.post(url=url, json=data)
         if response.status_code == 200:
             return response.json()
@@ -74,7 +73,18 @@ class ServiceAmqpGateway(BaseService):
         else:
             raise CloudOperationFailed(url)
 
-    def rpc_redirect_update_user_info(self, received:dict):
+    def rpc_redirect_update_user_info(self, received:dict)->dict:
+        """
+        Sends JSON at a queue to the cloud gateway
+
+        :param received: JSON with prameters for executing an RPC function at the cloud received from a client service
+        :type received: dict
+
+        :return: response JSON received from the cloud gateway with the function result to be queued to the calling service at the client
+        :rtype: dict
+
+        :raises CloudOperationFailed: received unknown error from server 
+        """
         register_event("client_gateway","rpc_redirect_update_user_info","Started redirecting update user info msg",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         url=f"{self.server_url}/rpc_exec_update_user_info"
@@ -86,6 +96,17 @@ class ServiceAmqpGateway(BaseService):
         return response_from_cloud_gateway
 
     def rpc_redirect_client_requesting_task(self, received:dict):
+        """
+        Sends JSON at a queue to the cloud gateway
+
+        :param received: JSON with prameters for executing an RPC function at the cloud received from a client service
+        :type received: dict
+
+        :return: response JSON received from the cloud gateway with the function result to be queued to the calling service at the client
+        :rtype: dict
+
+        :raises CloudOperationFailed: received unknown error from server 
+        """
         register_event("client_gateway","rpc_redirect_client_requesting_task","Started redirecting task request msg",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         url=f"{self.server_url}/rpc_exec_client_requesting_task"

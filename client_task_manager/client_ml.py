@@ -5,7 +5,7 @@ from typing import Callable
 class ClientML:
     """
     Start and stop client-side tasks. Mantain client-side tasks OBJECTS in a map using task ID as key
-
+ 
     :param work_path: project location, within which "tasks" dir resides
     :type work_path: str
     """
@@ -23,10 +23,10 @@ class ClientML:
         :param client_side_task_object: task handler, used to run and stop process
         :type client_side_task_object: ClientSideTask
         
-        :raises: TaskIdAlredyInUse
-
         :return: inserted task object 
         :rtype: ClientSideTask
+        
+        :raises TaskIdAlredyInUse: try to insert repeated task
         """
         if task_id in self.task_id_to_task_object_map:
             raise TaskIdAlredyInUse(task_id)
@@ -39,11 +39,11 @@ class ClientML:
         
         :param task_id: task ID
         :type task_id: str
-        
-        :raises: TaskIdNotFound
 
         :return: removed task object 
         :rtype: ClientSideTask
+        
+        :raises TaskIdNotFound: try to remove a task that was not found
         """
         try:
             return self.task_id_to_task_object_map.pop(task_id)
@@ -63,13 +63,13 @@ class ClientML:
         :param arguments: string to append to the command with arguments separated by " "
         :type arguments: str
         
-        :raises: FileNotFoundError 
+        :raises FileNotFoundError: "{work_path}/tasks/task_{task_id}/client.py" does not exist
         
-        :raises: TaskIdAlredyInUse
+        :raises TaskIdAlredyInUse: could not start a task that is alredy in the map
 
-        :raises: TaskAlredyRunning
+        :raises TaskAlredyRunning: try to start a task that was not stopped
 
-        :raises: PermissionError
+        :raises PermissionError: doesn't have permission to run the task script
         """
         if arguments is None:
             arguments_list = None
@@ -92,9 +92,9 @@ class ClientML:
         :param task_id: task ID
         :type task_id: str
         
-        :raises: TaskIdNotFound 
+        :raises TaskIdNotFound: task to be stopped is not registerd
         
-        :raises: TaskAlredyStopped
+        :raises TaskAlredyStopped: try to stop a task that was alredy stopped
         """
         client_side_task_object = self._remove_task_from_map(task_id)
         client_side_task_object.stop_task_client()
@@ -103,7 +103,6 @@ class ClientML:
         """
         Finishes all tasks
         """
-
         print("Stopping all tasks!")
         tasks_list = self.task_id_to_task_object_map.copy().keys()
         for task_id in tasks_list:
@@ -116,5 +115,8 @@ class ClientML:
     def get_running_tasks(self) -> list:
         """
         Returns a list with running task's IDs
+
+        :return: list of task IDs 
+        :rtype: list
         """
         return list(self.task_id_to_task_object_map.keys())

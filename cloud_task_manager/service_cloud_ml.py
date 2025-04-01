@@ -24,8 +24,13 @@ class ServiceCloudML(BaseService):
 
     :param workpath: project location, within which "tasks" dir resides
     :type workpath: str
-    """
 
+    :param broker_host: IP or hostname of RPC broker
+    :type broker_host: str
+    
+    :param broker_port: RPC broker port
+    :type broker_port: int
+    """
     def __init__(
             self, 
             workpath: str, 
@@ -83,12 +88,12 @@ class ServiceCloudML(BaseService):
         :param func_name: JSON message name
         :type func_name: str
 
+        :raises OSError: if schema file was not found
+
+        :raises json.JSONDecodeError: invalid JSON file format 
+
         :return: JSON
         :rtype: dict
-
-        :raises: OSError
-
-        :raises: json.JSONDecodeError
         """
         with open(os.path.join(self.workpath, "schemas", f"{func_name}.json")) as f:
             return json.load(f)
@@ -101,7 +106,11 @@ class ServiceCloudML(BaseService):
         :param task_id: task ID
         :type task_id: str
 
-        :raises: TaskIdNotFound
+        :raises sqlite3.IntegrityError: could not perform DB statement
+
+        :raises tasks_db_interface.TaskNotRegistered: task not found in database
+
+        :raises cloud_ml.TaskIdNotFound: task not found in map
         """
         register_event("service_cloud_ml","handle_error_from_task",f"Started handling error from task {task_id}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
@@ -121,7 +130,9 @@ class ServiceCloudML(BaseService):
         :param received: JSON containing task ID, host, port, arguments, selection criteria, tags, ...
         :type received: dict
 
-        :raises: sqlite3.IntegrityError
+        :raises sqlite3.IntegrityError: could not perform DB statement
+
+        :raises tasks_db_interface.TaskNotRegistered: task not found
         """
         startTime = tm.process_time_ns()
         register_event("service_cloud_ml","rpc_exec_create_task","Started task creation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
@@ -150,17 +161,19 @@ class ServiceCloudML(BaseService):
         :param received: JSON containing task ID and optional arguments
         :type received: dict
 
-        :raises: FileNotFoundError
+        :raises FileNotFoundError: task file not found
 
-        :raises: TaskIdAlredyInUse
+        :raises cloud_ml.TaskIdNotFound: task ID not found in map
 
-        :raises: TaskAlredyRunning
+        :raises cloud_ml.TaskIdAlredyInUse: tried to start a task that alredy exists in map 
 
-        :raises: PermissionError
+        :raises cloud_ml.TaskAlredyRunning: tried to start a task that is alredy running
 
-        :raises: sqlite3.Error
+        :raises PermissionError: task file cannot be run due to lack of permissions
 
-        :raises: TaskNotRegistered
+        :raises sqlite3.IntegrityError: could not perform DB statement
+
+        :raises tasks_db_interface.TaskNotRegistered: task not found in DB
         """
         startTime = tm.process_time_ns()
         register_event("service_cloud_ml","rpc_exec_start_server_task","Started server task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
@@ -204,14 +217,14 @@ class ServiceCloudML(BaseService):
 
         :param received: JSON containing task ID
         :type received: dict
+        
+        :raises cloud_ml.TaskIdNotFound: task ID not found in map
 
-        :raises: TaskIdNotFound
+        :raises cloud_ml.TaskAlredyStopped: tried to stop a task that is not running
 
-        :raises: TaskAlredyStopped
+        :raises sqlite3.IntegrityError: could not perform DB statement
 
-        :raises: sqlite3.Error
-
-        :raises: TaskNotRegistered
+        :raises tasks_db_interface.TaskNotRegistered: task not found in DB
         """
         register_event("service_cloud_ml","rpc_exec_stop_server_task","Started server task finalization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
@@ -228,7 +241,13 @@ class ServiceCloudML(BaseService):
         :param received: JSON containing client ID
         :type received: dict
 
-        :return: list with selected tasks information (ID, host, port, tags, ...)
+        :raises criteria_evaluation_engine.InvalidSelCrit: selection criteria expression is invalid
+
+        :raises sqlite3.IntegrityError: could not perform DB statement
+
+        :raises tasks_db_interface.TaskNotRegistered: task not found in DB
+
+        :return: list of ditionaries. Each dict is a task with keys such as ID, host, port, tags, ...
         :rtype: list
         """
         register_event("service_cloud_ml","rpc_exec_client_requesting_task","Started responding requested task to client",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
@@ -289,9 +308,9 @@ class ServiceCloudML(BaseService):
         :param received: JSON containing optional task info
         :type received: dict
 
-        :raises: sqlite3.Error
+        :raises sqlite3.IntegrityError: could not perform DB statement
 
-        :raises: TaskNotRegistered
+        :raises TaskNotRegistered: task not found in DB
         """
         register_event("service_cloud_ml","rpc_exec_update_task","Started updating task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
@@ -331,8 +350,23 @@ class ServiceCloudML(BaseService):
 
         return response["return"]
     
-    def rpc_exec_get_task_by_id(self, received:dict):
+    def rpc_exec_get_task_by_id(self, received:dict) -> dict:
+        """
+        Get task info from DB using task ID
+
+        :param received: JSON containing task_id
+        :type received: dict
+
+        :returns received: JSON with task_id, last_mod_date, host, port, running, selection_criteria, server_arguments, client_arguments, username, password, tags, files_paths
+        :rtype: dict
+
+        :raises sqlite3.IntegrityError: could not perform DB statement
+
+        :raises TaskNotRegistered: task not found in DB
+        """
+        register_event("service_cloud_ml","rpc_exec_get_task_by_id","Started querying task info",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
         task_dict = self.db_handler.query_task(received.get("task_id"))
+        register_event("service_cloud_ml","rpc_exec_get_task_by_id","Finished querying task info",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
         return task_dict
 
 if __name__ == "__main__":

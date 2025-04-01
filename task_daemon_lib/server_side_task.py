@@ -5,22 +5,24 @@ from pathlib import Path
 from typing import Callable
 
 class ServerSideTask(Task):
+    """
+    Interface for running Flower server code as a child process
 
+    :param work_path: project location, within which "tasks" dir resides
+    :type work_path: str
+
+    :param task_id: task ID
+    :type task_id: str
+
+    :param messange_handler: handler function for receiving bytes sent by process
+    :type messange_handler: Callable[[bytes],None]
+
+    :param arguments: CLI args after "python3 {filename} {work_path} ..."
+    :type arguments: list[str]
+
+    :raises FileNotFoundError: "{work_path}/tasks/task_{task_id}/server.py" does not exist
+    """
     def __init__(self, work_path: str, task_id: str, messange_handler:Callable[[bytes],None], arguments: list[str] = None) -> None:
-        """
-        Interface for running Flower server code as a child process
-
-        :param work_path: project location, within which "tasks" dir resides. If "{work_path}/tasks/task_{task_id}/server.py" does not exist, raises Exception
-        :type work_path: str
-
-        :param messange_handler: handler function for receiving bytes sent by process
-        :type task_id: Callable[[bytes],None]
-
-        :param arguments: CLI args after "python3 {filename} {work_path} ..."
-        :type arguments: list[str]
-
-        :raises: FileNotFoundError 
-        """
         super().__init__(work_path, task_id)
         self.server_main_file_name = self._get_server_main_file_name(self.task_dir_name)
         self.arguments = arguments
@@ -37,9 +39,9 @@ class ServerSideTask(Task):
         Run "{work_path}/tasks/task_{task_id}/server.py" as a subprocess and starts message 
         listener, which calls self.message_handler(bytes) uppon receiving bytes from child
         
-        :raises: TaskAlredyRunning
+        :raises TaskAlredyRunning: starting a task that is alredy running
 
-        :raises: PermissionError
+        :raises PermissionError: doesn't have permission to run the task script  
         """
         self.run_task(
             self.server_main_file_name, 
@@ -50,7 +52,7 @@ class ServerSideTask(Task):
         """
         Stop process and message listener
 
-        :raises: TaskAlredyStopped
+        :raises TaskAlredyStopped: stopping a task that is not running
         """
         self.stop_task()
 

@@ -2,9 +2,9 @@ import time as tm
 from client_task_manager.client_ml import ClientML
 from client_task_manager.process_messages_from_client_task import ForwardMessagesFromClientTask
 from microservice_interconnect.rpc_client import rpc_send, register_event
-from task_daemon_lib.task_exceptions import TaskAlredyStopped
+from task_daemon_lib.task_exceptions import *
 from client_task_manager.client_info_manager import ClientInfoManager
-from client_task_manager.task_files_downloader import download_task_training_files
+from client_task_manager.task_files_downloader import *
 import json
 import os
 from typing import Callable
@@ -25,11 +25,22 @@ class ServiceClientML:
     :param client_info: JSON with client basic info
     :type client_info: dict
 
-    :param policy: if "one", start the one task, using received order as priority. If "all", starts all received tasks 
-    :type policy: str
+    :param autorun: if True, service constructor blocks the rest of the code and runs a sequence of actions by default
+    :type autorun: bool
 
     :param policy: if "one", start the one task, using received order as priority. If "all", starts all received tasks 
     :type policy: str
+
+    :param download_url: hostname (or IP) and port of the server that hosts tasks to be downloaded. E.g. http://127.0.0.1:5000
+    :type download_url: str
+
+    :param client_broker_host: hostname or IP of the broker at the client
+    :type client_broker_host: str
+
+    :param client_broker_port: port of the broker at the client
+    :type client_broker_port: int
+
+    :raises NotImplementedError: policy not implemented
     """
     def __init__(
         self,
@@ -38,8 +49,8 @@ class ServiceClientML:
         autorun:bool=True,
         policy:str="one",
         download_url:str="http://127.0.0.1:5000",
-        client_broker_host="localhost",
-        client_broker_port=5672) -> None:
+        client_broker_host:str="localhost",
+        client_broker_port:int=5672) -> None:
 
         self.broker_host = client_broker_host
         self.broker_port = client_broker_port
@@ -50,30 +61,29 @@ class ServiceClientML:
         self.tasks_path = os.path.join(workpath,"tasks")
 
         self.client_info_handler = ClientInfoManager(workpath, id=client_info.get("user_id"))
+        self.client_info_handler.save_complete_info(client_info)
         self.initial_client_info = client_info
 
-        self.client_info_handler.save_complete_info(client_info)
-        
         self.current_tasks_list = []
         self.problematic_tasks = []
 
-        self.set_signal()
+        self._set_signal()
         
         if autorun:
     
-            policy_functions = {"one":self.run_task_one_policy,
-                                "all":self.run_tasks_all_policy}
+            policy_functions = {"one":self._run_task_one_policy,
+                                "all":self._run_tasks_all_policy}
             self.policy_function = policy_functions.get(policy)
     
             if self.policy_function is None:
                 print("Policy should be 'one' or 'all'. Default: one")
-                self.policy_function = self.run_task_one_policy
+                self.policy_function = self._run_task_one_policy
         
             register_event("service_client_ml","main","Started",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
     
             self._continuous_procedure()
 
-    def set_signal(self):
+    def _set_signal(self):
         def signal_handler(sig,frame):
             register_event("service_client_ml","main","Interrupted",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
             self.client_ml_backend.finish_all()
@@ -83,10 +93,7 @@ class ServiceClientML:
 
     def _update_info_procedure(self):
         """
-        This function is periodically called to perform the following actions:
-        1) sends stats
-        2) requets a task
-        3) updates current tasks list
+        This function is periodically called to perform the following actions: 1) sends stats, 2) requets a task, and 3) updates current tasks list
         """
         self.rpc_call_send_client_stats()
 
@@ -109,10 +116,10 @@ class ServiceClientML:
             self.policy_function(self.current_tasks_list.copy())
             _semaphore()
 
-    def run_tasks_all_policy(self, tasks_list:list):
+    def _run_tasks_all_policy(self, tasks_list:list):
         raise NotImplementedError
 
-    def run_task_one_policy(self, tasks_list:list):
+    def _run_task_one_policy(self, tasks_list:list):
         """
         Run the first task of the list if no task is running. If fails, try the next
 
@@ -130,7 +137,7 @@ class ServiceClientML:
         self.selected_task_info = candidates_tasks[0]
 
         startDownloadTime = tm.process_time_ns()
-        register_event("service_client_ml","run_task_one_policy","Started downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+        register_event("service_client_ml","_run_task_one_policy","Started downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
         task_id = self.selected_task_info.get("ID") # We assume that the received task was alredy validated at RPC library
         task_arguments = self.selected_task_info.get("client_arguments") # We assume that the received task was alredy validated at RPC library
@@ -143,15 +150,17 @@ class ServiceClientML:
                 files_paths=self.selected_task_info.get("files_paths"),
                 download_server_url=self.download_url
             )
-        except Exception as e:
-            print(f"Exception occured while downloading task {task_id}: {e}")
-            self.problematic_tasks.append(self.selected_task_info)
-            return
-        
-        register_event("service_client_ml","run_task_one_policy","Finished downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
-        register_event("service_client_ml","download_task_time",f"{tm.process_time_ns()-startDownloadTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+            register_event("service_client_ml","_run_task_one_policy","Finished downloading task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
+            register_event("service_client_ml","download_task_time",f"{tm.process_time_ns()-startDownloadTime}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
-        self.start_client_task(task_id, task_arguments)
+            self.start_client_task(task_id, task_arguments)
+            return
+        except (TaskDownloadGenericError, TaskDownloadAuthFail, TaskNotFoundInServer) as e:
+            print(f"Exception occured while downloading task {task_id}: {e}")    
+        except (FileNotFoundError, TaskIdAlredyInUse, TaskAlredyRunning, PermissionError) as e:
+            print(f"Exception occured while starting the task {task_id}: {e}")    
+        
+        self.problematic_tasks.append(self.selected_task_info)
 
     def rpc_call_send_client_stats(self):
         """
@@ -191,7 +200,12 @@ class ServiceClientML:
         startTime = tm.process_time_ns()
         register_event("service_client_ml","rpc_call_request_task","Started requesting task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
-        client_info = self.client_info_handler.get_info()
+        try:
+            client_info = self.client_info_handler.get_info()
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"Could not get info file: {e}. Restarting stats")
+            self.client_info_handler.save_complete_info(self.initial_client_info)
+
         response = rpc_send(
             "rpc_exec_client_requesting_task",
             {"user_id":client_info.get('user_id')},
@@ -214,7 +228,7 @@ class ServiceClientML:
         :param task_id: task ID
         :type task_id: str
 
-        :raises: TaskIdNotFound
+        :raises TaskIdNotFound: task not found 
         """
         register_event("service_client_ml","handle_error_from_task",f"Started handling error from task {task_id}",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
 
@@ -240,13 +254,13 @@ class ServiceClientML:
         :param arguments: command line arguments when startting child task
         :type arguments: str
         
-        :raises: FileNotFoundError 
+        :raises FileNotFoundError: "{work_path}/tasks/task_{task_id}/client.py" does not exist
         
-        :raises: TaskIdAlredyInUse
+        :raises TaskIdAlredyInUse: could not start a task that is alredy in the map
 
-        :raises: TaskAlredyRunning
+        :raises TaskAlredyRunning: try to start a task that was not stopped
 
-        :raises: PermissionError
+        :raises PermissionError: doesn't have permission to run the task script
         """
         startTime = tm.process_time_ns()
         register_event("service_client_ml","start_client_task","Started client task initialization",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
