@@ -1,33 +1,33 @@
 Client Task Manager
 ===================
 
-Service Cloud ML
-----------------
+Service Client ML
+-----------------
 
-.. automodule:: service_cloud_ml
+.. automodule:: client_task_manager.service_client_ml
    :members:
 
-Process messages from task 
---------------------------
+Process messages from client task 
+---------------------------------
 
-.. automodule:: process_messages_from_task
+.. automodule:: client_task_manager.process_messages_from_client_task
    :members:
 
-Cloud ML
---------
+Client ML
+---------
 
-.. automodule:: cloud_ml
+.. automodule:: client_task_manager.client_ml
    :members:
 
-Tasks DB interface
+Task files downloader
+---------------------
+
+.. automodule:: client_task_manager.task_files_downloader
+   :members:
+
+Client info manager
 -------------------
 
-.. automodule:: tasks_db_interface
-   :members:
-
-Selection Criteria Evaluation Engine
--------------------------------------
-
-.. automodule:: criteria_evaluation_engine
+.. automodule:: client_task_manager.client_info_manager
    :members:
 
