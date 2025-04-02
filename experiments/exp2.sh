@@ -18,6 +18,7 @@ echo "Start client broker"
 sudo docker stop client-broker-rabbit
 sudo docker rm client-broker-rabbit
 sudo docker run --hostname broker --name client-broker-rabbit -p 8000:5672 rabbitmq:3 > logs_${LOG_TIMESTAMP}/client_broker.log 2>&1 &
+echo "Wait 30 seconds to ensure safe startup"
 sleep 30
 
 echo "Start event reader"
@@ -86,3 +87,5 @@ rm -r cloud_task_manager/tasks/task_C
 cd experiments
 echo "---- RESULTS ----" >> exp2_raw_times
 python exp2_process_results.py >> exp2_raw_times
+
+echo "Completed! Results are presented in experiments/exp2_raw_times"

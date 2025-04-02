@@ -237,7 +237,7 @@ A tarefa deve progredir ao longo de apenas uma rodada. Ao finalizá-la, deve ser
 
 ## Finalização
 
-Após o teste mínimo, os serviços podem ser interrompidos (Ctrl + c), bem como os brokers (`docker stop [nome_do_contêiner] ; docker rm [nome_do_contêiner]`). O ambiente pode ser desativado (`conda deactivate`).
+Após o teste mínimo, os serviços podem ser interrompidos (Ctrl + c), bem como os brokers (`sudo docker stop [nome_do_contêiner] ; sudo docker rm [nome_do_contêiner]`). O ambiente pode ser desativado (`conda deactivate`).
 
 # Experimentos
 
@@ -263,6 +263,7 @@ conda activate agata
 bash experiments/exp1.sh
 ```
 
+Algumas mensagens de erro, como `Error response from daemon: No such container: server-broker-rabbit`, devem aparecer. Ignore.
 A permissão de superusuário será pedida para executar o Docker. O experimento demora certa de 4 minutos. O revisor pode acompanhar no terminal a impressão do andamento do experimento. Detalhes sobre o experimento são encontrados no artigo. O registro e a inicialização de tarefas ocorre por linha de comando, ao invés de interface gráfica. Os resultados mais interessantes são:
 * O arquivo `experiments/events.json` apresenta, em ordem de momento de execução, as principais etapas necessárias para a execução da tarefa de aprendizado federado, bem como a estampa de tempo correspondente e o componente onde ocorrem
 * O arquivo `experiments/exp1_raw_times` resume o tempo para as operações mais importantes
