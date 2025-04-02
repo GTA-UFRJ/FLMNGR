@@ -1,11 +1,11 @@
 import configparser
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Importando CORS
+from flask_cors import CORS  
 from microservice_interconnect.rpc_client import rpc_send, register_event
 from flask.wrappers import Response
 
 app = Flask(__name__)
-CORS(app)  # Habilitando CORS para todas as rotas
+CORS(app)  
 
 configs = configparser.ConfigParser()
 configs.read("./config.ini")
@@ -51,9 +51,9 @@ def rpc_handler(function_name:str)->Response:
 
 def _build_cors_preflight_response():
     response = jsonify({"message": "CORS preflight response"})
-    response.headers.add("Access-Control-Allow-Origin", "*")  # Permite qualquer origem
-    response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")  # Métodos permitidos
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type")  # Headers permitidos
+    response.headers.add("Access-Control-Allow-Origin", "*") 
+    response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS") 
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type") 
     return response
 
 if __name__ == "__main__":

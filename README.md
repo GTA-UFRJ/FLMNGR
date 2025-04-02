@@ -129,7 +129,7 @@ O borker irá escutar na porta 9000 do hospedeiro. Então, verifique se não há
 sudo docker run -d --hostname broker --rm --name server-broker-rabbit -p 9000:5672 rabbitmq:3
 ```
 
-### Inicialize o gateway 
+### Inicialize o gateway em nuvem
 
 Abra um novo terminal, ative o ambiente (`conda activate agata`) e execute:
 
@@ -145,7 +145,7 @@ Abra um novo terminal, ative o ambiente (`conda activate agata`). Antes de execu
 python3 -u -m user_manager.service_user_manager
 ```
 
-### Inicialize o gerenciador de tarefas
+### Inicialize o gerenciador de tarefas em nuvem
 
 Abra um novo terminal, ative o ambiente (`conda activate agata`). Antes de executar o comando abaixo, apague o arquivo `cloud_task_manager/db/tasks.db` caso exista. Em seguida execute:
 
@@ -178,7 +178,7 @@ O borker irá escutar na porta 9000 do hospedeiro. Então, verifique se não há
 sudo docker run -d --hostname broker --rm --name client-broker-rabbit -p 8000:5672 rabbitmq:3
 ```
 
-### Inicialize o gateway 
+### Inicialize o gateway do cliente
 
 Abra um novo terminal, ative o ambiente (`conda activate agata`) e execute:
 
@@ -186,7 +186,7 @@ Abra um novo terminal, ative o ambiente (`conda activate agata`) e execute:
 python3 -u -m client_gateway.amqp_gateway 
 ```
 
-### Inicialize o gerenciador de tarefas 
+### Inicialize o gerenciador de tarefas no cliente
 
 Abra um novo terminal, ative o ambiente (`conda activate agata`). Este é o gerenciador de tarefas do cliente! Não é o mesmo inicializado no servidor previamente. Antes de executar o comando a seguir, delete todos os arquivos dentro dos diretórios `client_task_manager/tasks/` e `client_task_manager/client_info/`, caso existam. O primeiro diretório contém as tarefas que o cliente baixou do servidor, e o segundo contem informações do cliente usadas para identificá-lo e listar estatísticas. **Não apague os diretórios** `client_task_manager/tasks/` e `client_task_manager/client_info/`. Apague todos os arquivos e diretórios **dentro** destes diretórios. Em seguida execute: 
 
@@ -206,7 +206,7 @@ O teste mínimo depende da inicialização manual, descrita na seção anterior.
 
 ### Acesse a interface gráfica
 
-Em um novo terminal, execute o comando a seguir e abra o navegador web local na porta 9999 para acessar uma interface web de interação com o ambiente em nuvem.
+Em um novo terminal, execute o comando a seguir e abra o navegador web local na porta 9999 para acessar uma interface web de interação com o ambiente em nuvem. **Acesse a interface web usando http://localhost:9999**
 
 ```bash
 python3 -m http.server -d cloud_web_interface 9999
