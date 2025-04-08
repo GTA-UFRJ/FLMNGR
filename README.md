@@ -60,7 +60,7 @@ cd FLMNGR
 
 # Preocupações com segurança
 
-A execução dos experimentos não apresentam para os revisores riscos de segurança **conhecidos pelos autores**. Por prevenção, uma vez que alguns processos expõem portas de rede, recomenda-se a execução em uma rede local segura.
+A execução dos experimentos não apresentam para os revisores riscos de segurança **conhecidos pelos autores**.
 
 Em **casos de modificação do código por parte do usuário**, para além do tutorial apresentado neste artefato, os autores se isentam de riscos da segurança.
 
@@ -218,7 +218,7 @@ Clique no link `Create task` e preencha os campos do formulário conforme a imag
 
 Após clicar em `Submit`, o gerenciador de tarefas em nuvem irá registrar uma nova tarefa em seu banco de dados. Os arquivos desta tarefa encontram-se em `cloud_task_manager/tasks/task_4fe5/*`. O upload dos arquivos poderia ser feito acessando a opção `Upload task files` no menu inicial, mas este passo foi omitido por simplicidade.
 
-![alt text](create_task_2.png)
+![alt text](cloud_web_interface/create_task_2.png)
 
 ### Inicie a tarefa no servidor
 
@@ -308,7 +308,7 @@ SOFTWARE.
 # Equivalência de terminologias
 
 | Artigo (PT)    | Código (EN) |
-| ------------------------ | ------------------ |
+| ------------------------------- | ------------------ |
 | Gerenciador de tarefas em nuvem | Cloud task manager|
 | Gerenciador de tarefas embarcado | Client task manager|
 | Gateway do client | Client gateway |
@@ -334,7 +334,7 @@ SOFTWARE.
 ```bash
 cd docs
 sphinx-build -M html source build
-python3 -m http.server -d build/html 7777
+python3 -m http.server -d build/html 7777 
 ```
 
 Acesse `http:\\localhost:7777` para visualizar a documentação no formato Sphinx

@@ -1,19 +1,19 @@
 # Tutorial
 
-The purpose of this artifact is to exemplify the use of the AGATA tool through two experiments:
+The purpose of this artifact is to exemplify the use of the AGATA tool through an example and two experiments:
+
+* The basic example involves manually initializing microservices and starting a task via a web interface.
 
 * The first experiment initializes the server's microservices and then creates and initializes a simple learning task on the server, executed on the local machine. Then, the client microservices are initialized on the same machine, automatically transferring the task to the client.
 
 * The second experiment differs from the first by initializing one task with an error (E) and another correct one (C). When an error occurs in E, the client automatically switches the task to C.
 
-In both cases, the results are presented in the files `experiments/events.json`, `experiments/exp_*_raw_times`, and `logs_*/*`.
 
 ## Basic Information
 
 The experiments were conducted on different physical and virtual machines with the following specifications:
 * VM with 4 CPUs, 8GB RAM, and Debian 12, instantiated on a server with an Intel Xeon E5-2650 CPU, 8 cores, and 16 threads, 2.80GHz, and 32GB RAM.
 * PC with Intel i9-10900, 2.80 GHz CPU, 20 threads, 32GB RAM, and Ubuntu 20.04.
-* Laptop with Intel i5-8250U, 3.40 GHz CPU, 8 threads, 8GB RAM, and Ubuntu 20.04.
 
 Since no performance issues were observed in any of these configurations, execution is assumed to be guaranteed under the following conditions:
 * Operating System: Ubuntu 20.04 or Debian 12
@@ -92,7 +92,7 @@ The broker will listen on port 9000 of the host. Ensure no other application is 
 sudo docker run -d --hostname broker --rm --name server-broker-rabbit -p 9000:5672 rabbitmq:3
 ```
 
-#### Start the Gateway
+#### Start the Cloud Gateway
 
 Open a new terminal, activate the environment (`conda activate agata`), and run:
 
@@ -108,7 +108,7 @@ Open a new terminal, activate the environment (`conda activate agata`). Before e
 python3 -u -m user_manager.service_user_manager
 ```
 
-#### Start the Task Manager
+#### Start the Cloud Task Manager
 
 Open a new terminal, activate the environment (`conda activate agata`). Before executing the command below, delete the file `cloud_task_manager/db/tasks.db` if it exists. Then execute:
 
@@ -141,7 +141,7 @@ The broker will listen on port 8000 of the host. Ensure no other application is 
 sudo docker run -d --hostname broker --rm --name client-broker-rabbit -p 8000:5672 rabbitmq:3
 ```
 
-#### Start the Gateway
+#### Start the Client Gateway
 
 Open a new terminal, activate the environment (`conda activate agata`), and execute:
 
@@ -149,7 +149,7 @@ Open a new terminal, activate the environment (`conda activate agata`), and exec
 python3 -u -m client_gateway.amqp_gateway
 ```
 
-#### Start the Task Manager
+#### Start the Client Task Manager
 
 Open a new terminal, activate the environment (`conda activate agata`). This is the **client task manager**, not the one previously started on the server. Before executing the command below, delete all files inside the directories `client_task_manager/tasks/` and `client_task_manager/client_info/`, if they exist. Do **not** delete the directories themselves. Then execute:
 
@@ -170,7 +170,7 @@ The minimum test depends on manual initialization, as described in the previous 
 
 #### Access the Graphical Interface
 
-In a new terminal, run the following command and open the local web browser on port 9999 to access a web interface for interacting with the cloud environment.
+In a new terminal, run the following command and open the local web browser on port 9999 to access a web interface for interacting with the cloud environment. **Acess the web interafce using http://localhost:9999**
 
 ```bash
 python3 -m http.server -d cloud_web_interface 9999
@@ -182,7 +182,7 @@ Click on the `Create task` link and fill in the form fields as shown in the imag
 
 After clicking `Submit`, the cloud task manager will register a new task in its database. The files for this task are located in `cloud_task_manager/tasks/task_4fe5/*`. The file upload could be done by accessing the `Upload task files` option in the main menu, but this step was omitted for simplicity.
 
-![alt text](cloud_web_interface/create_task_2.png)
+![alt text](create_task_2.png)
 
 #### Start the Task on the Server
 
@@ -215,6 +215,8 @@ Modify the following line in the `config.ini` file:
 [events]
 register_events=true
 ```
+
+In both cases, the results are presented in the files `experiments/events.json`, `experiments/exp_*_raw_times`, and `logs_*/*`
 
 ### Experiment 1
 
