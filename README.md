@@ -68,10 +68,15 @@ Crie uma conta no [GitHub](https://github.com/).
 Gere na máquina um par de chaves:
 
 ```bash
-ssh-keygen -t  ed25519 -C "[seu e-mail]"
+ssh-keygen -t  ed25519 -C "[e-mail]"
+```
+
+Na hora que pedir o caminho e a senha, deixe em branco. Execute:
+
+```bash
 eval "$(ssh-agent -s)"
-ssh-add [caminho dado para a chave]
-cat [caminho dado para a chave].pub
+ssh-add /home/revisor/.ssh/id_ed25519
+cat /home/revisor/.ssh/id_ed25519.pub
 ```
 
 Acesse `Settings > SSH and GPG keys` ([link](https://github.com/settings/keys)). Clique em `New SSH key` e copie e cole a chave impressa no terminal no passo anterior na caixa do texto no navegador.
@@ -83,13 +88,6 @@ git clone git@github.com:GTA-UFRJ/FLMNGR.git
 cd FLMNGR
 ```
 
-Define as credenciais do GitHub localmente:
-
-```bash
-git config user.name [nome]
-git config user.email [e-mail]
-```
-
 ## Conda (miniconda 3)
 
 Os seguintes passos são para instalar o miniconda:
@@ -99,11 +97,14 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash ~/Miniconda3-latest-Linux-x86_64.sh
 ```
 
+Confirme os termos. Para a primeira pergunta, deixe vazio. Para a segunda pergunta, responda yes.
+
 Feche e abra o terminal e execute:
 
 ```bash
 source ~/.bashrc
 conda list
+conda update -n base -c defaults conda
 ```
 
 ## Docker
@@ -130,8 +131,9 @@ Instalação:
 
 ```bash
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo docker run hello-world
 ```
+
+Reinicie o sistema.
 
 # Preocupações com segurança
 
@@ -163,6 +165,8 @@ Instale as dependências dentro do ambiente conda:
 conda install pip
 pip install -r requirements.txt
 ```
+
+Este último comando pode demorar um tempo considerável.
 
 ## Arquivo de configuração
 
