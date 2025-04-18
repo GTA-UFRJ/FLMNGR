@@ -45,17 +45,92 @@ Uma vez que em todas as configurações não foi observada nenhuma dificuldade c
 
 # Dependências
 
-Os requisitos são:
+A seguir, são apresentados os passos necessários para configurar as dependências:
+
 * Git
-* Python 3.12.7 
 * Conda (miniconda3)
+* Python 3.12.7 (instanciado dentro do ambiente conda) 
 * Docker 24.0.7
 
-Clone o repositório do projeto no GitHub
+Caso haja alguma dependência já configurada no sistema, basta pular a subseção correspondente na documentação.
+
+## GitHub
+
+Instale o Git usando:
+
+```bash
+sudo apt-get update
+sudo apt-get install git-all
+```
+
+Crie uma conta no [GitHub](https://github.com/). 
+
+Gere na máquina um par de chaves:
+
+```bash
+ssh-keygen -t  ed25519 -C "[seu e-mail]"
+eval "$(ssh-agent -s)"
+ssh-add [caminho dado para a chave]
+cat [caminho dado para a chave].pub
+```
+
+Acesse `Settings > SSH and GPG keys` ([link](https://github.com/settings/keys)). Clique em `New SSH key` e copie e cole a chave impressa no terminal no passo anterior na caixa do texto no navegador.
+
+Clone o repositório
 
 ```bash
 git clone git@github.com:GTA-UFRJ/FLMNGR.git
 cd FLMNGR
+```
+
+Define as credenciais do GitHub localmente:
+
+```bash
+git config user.name [nome]
+git config user.email [e-mail]
+```
+
+## Conda (miniconda 3)
+
+Os seguintes passos são para instalar o miniconda:
+
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash ~/Miniconda3-latest-Linux-x86_64.sh
+```
+
+Feche e abra o terminal e execute:
+
+```bash
+source ~/.bashrc
+conda list
+```
+
+## Docker
+
+Configuração do repositório `apt`:
+
+```bash
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+```
+
+Instalação:
+
+```bash
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo docker run hello-world
 ```
 
 # Preocupações com segurança
@@ -329,7 +404,11 @@ SOFTWARE.
 | pede_tarefa | rpc_exec_client_requesting_task |
 | download_cod | download_file |
 
-# Documentação
+# Documentação 
+
+A documentação é encontrada no documento `documentation.pdf` na raíz do repositório. 
+
+Caso queira gerar a documentação no formato web, execute:
 
 ```bash
 cd docs
