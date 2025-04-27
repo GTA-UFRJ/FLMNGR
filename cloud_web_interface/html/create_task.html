@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Task</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/create_task.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.bundle.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body> 
+    <h1 style="text-align: center;">Create Task</h1>
+    <form onsubmit="submitForm(event)">
+        <div class="form-grid">
+            <label>Task ID *: <input type="text" id="task_id" required></label>
+            <label>Host *: <input type="text" id="host" required></label>
+            <label>Port *: <input type="text" id="port" required></label>
+            <label>Username *: <input type="text" id="username" required></label>
+            <label>Password *: <input type="password" id="password" required></label>
+            <label>Files Paths (comma-separated) *: <input type="text" id="files_paths" required></label>
+            <label>Selection Criteria: <input type="text" id="selection_criteria"></label>
+            <label>Server Arguments: <input type="text" id="server_arguments"></label>
+            <label>Client Arguments: <input type="text" id="client_arguments"></label>
+            <label>Tags (comma-separated): <input type="text" id="tags"></label>
+        </div>
+        <button type="submit" class="center-button">Submit</button>
+    </form>
+</body>
+</html>

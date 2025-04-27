@@ -1,0 +1,46 @@
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 20px;
+    column-gap: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form {
+    text-align: center;
+    margin-top: 5%;
+}
+
+.form-grid label {
+    display: flex;
+    flex-direction: column;
+}
+
+.center-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    min-width: 120px;  /* You can adjust this to your liking */
+    width: auto;  /* Adjust width automatically based on content */
+}
+
+table {
+    width: 70%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    margin: 20px auto;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background-color: rgba(92, 113, 112, 0.268);
+}

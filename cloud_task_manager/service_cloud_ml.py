@@ -131,8 +131,6 @@ class ServiceCloudML(BaseService):
         :type received: dict
 
         :raises sqlite3.IntegrityError: could not perform DB statement
-
-        :raises tasks_db_interface.TaskNotRegistered: task not found
         """
         startTime = tm.process_time_ns()
         register_event("service_cloud_ml","rpc_exec_create_task","Started task creation",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
