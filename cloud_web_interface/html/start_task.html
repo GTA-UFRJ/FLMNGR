@@ -4,51 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Start Task</title>
-    <style>
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            max-width: 600px;
-        }
-        .form-grid label {
-            display: flex;
-            flex-direction: column;
-        }
-        .form-grid button {
-            grid-column: span 2;
-            margin-top: 10px;
-        }
-    </style>
-    <script>
-        function submitForm(event) {
-            event.preventDefault();
-            
-            const formData = {
-                task_id: document.getElementById("task_id").value,
-                arguments: document.getElementById("arguments").value
-            };
-
-            fetch("http://localhost:9001/rpc_exec_start_server_task", {
-                method: "POST",
-                mode: "cors",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => alert("Task Started: " + JSON.stringify(data)))
-            .catch(error => alert("Error: " + error));
-        }
-    </script>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/start_task.js" defer></script>
 </head>
 <body>
-    <h1>Start Task</h1>
-    <form onsubmit="submitForm(event)" class="form-grid">
-        <label>Task ID *: <input type="text" id="task_id" required></label><br>
-        <label>Arguments: <input type="text" id="arguments"></label><br>
-        <button type="submit">Start Task</button>
-    </form>
+    <h1 style="text-align: center;">Start Task</h1>
+    <div class="center-container">
+        <form onsubmit="submitForm(event)" class="form">
+            <label>Task ID *: <input type="text" id="task_id" required></label><br>
+            <label>Arguments: <input type="text" id="arguments"></label><br>
+            <button type="submit" class="center-button">Start Task</button>
+        </form>
+    </div>
 </body>
 </html>

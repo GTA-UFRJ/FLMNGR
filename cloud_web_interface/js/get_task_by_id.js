@@ -21,7 +21,7 @@ async function submitForm(event) {
 async function handleResponse(response) {
     const data = await response.json()
     if (response.ok) return data;
-    else if (response.status == 400) throw new Error("Fatal error: invalid request");
+    else if (response.status == 400) throw new Error("Invalid request (fatal)");
     else if(data.includes("not registered")) throw new Error(`This task is not registered`);
     else { 
         console.error(data)
