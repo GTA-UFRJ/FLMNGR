@@ -35,14 +35,14 @@ class Task:
             raise FileNotFoundError(f"Directory '{task_dir_name}' does not exist.")
         return task_dir_name
     
-    def _start_message_listener(self, message_handler:Callable[[bytes],None]):
+    def _start_message_listener(self, message_handler:None):
         self.message_listener = TaskMessageListener(message_handler, self.process)
         self.message_listener.start()
 
     def _stop_message_listener(self):
         self.message_listener.stop()
 
-    def run_task(self, filename:str, message_handler:Callable[[bytes],None], arguments:list[str], add_work_path:bool=True):
+    def run_task(self, filename:str, message_handler, arguments:list, add_work_path:bool=True):
         """
         Start child process with 'filename', as well as the message listener
 

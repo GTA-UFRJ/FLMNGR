@@ -183,7 +183,7 @@ class ServiceClientML:
         response = rpc_send("rpc_exec_update_user_info",request,
                             host=self.broker_host, port=self.broker_port)
         if response.get("status_code") != 200:
-            print(f"Error after sending client info: {response.get("exception")}")
+            print(f"Error after sending client info: {response.get('exception')}")
         else:
             print(f"New info registered with success")
 
@@ -213,7 +213,7 @@ class ServiceClientML:
             port=self.broker_port)
         if response.get("status_code") != 200:
             register_event("service_client_ml","rpc_call_request_task","Failed requesting task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
-            print(f"Error after requesting task: {response.get("exception")}")
+            print(f"Error after requesting task: {response.get('exception')}")
             return []
         else:
             register_event("service_client_ml","rpc_call_request_task","Finished requesting task",allow_registering=allow_register,host=self.broker_host,port=self.broker_port)
@@ -314,6 +314,7 @@ if __name__ == "__main__":
             "avg_disconnection_per_round":None,
             "sensors":["camera","ecu"]
         },
+        download_url=f"http://{configs['server.broker']['host']}:5000",
         client_broker_host=configs["client.broker"]["host"],
         client_broker_port=configs["client.broker"]["port"],
     )

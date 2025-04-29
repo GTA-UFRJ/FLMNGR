@@ -21,7 +21,7 @@ class ClientSideTask(Task):
 
     :raises FileNotFoundError: "{work_path}/tasks/task_{task_id}/client.py" does not exist
     """
-    def __init__(self, work_path: str, task_id: str, messange_handler:Callable[[bytes],None], arguments: list[str] = None) -> None:
+    def __init__(self, work_path: str, task_id: str, messange_handler, arguments: list = None) -> None:
         super().__init__(work_path, task_id)
         self.client_main_file_name = self._get_client_main_file_name(self.task_dir_name)
         self.arguments = arguments

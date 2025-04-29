@@ -54,7 +54,7 @@ class ForwardMessagesFromClientTask:
             pass
         except (json.JSONDecodeError, TaskUnknownMessageType):
             # Replace by a log 
-            print(f"[{self.task_id}] {message.decode("utf8").strip()}")
+            print(f"[{self.task_id}] {message.decode('utf8').strip()}")
 
     def process_error(self, exception_message:str):
         """

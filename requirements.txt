@@ -1,11 +1,11 @@
 flwr[simulation]==1.11.1
-torch==2.5       # flwr alredy install torch
-torchvision==0.20
+torch       # flwr alredy install torch
+torchvision
 
-sphinx==7.4.7
-myst-parser==4.0.0
-sphinx-jsonschema==1.19.1
-sphinxcontrib.httpdomain==1.8.1
+#sphinx==7.4.7
+#myst-parser==4.0.0
+#sphinx-jsonschema==1.19.1
+#sphinxcontrib.httpdomain==1.8.1
 
 deepdiff
 
