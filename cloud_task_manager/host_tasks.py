@@ -6,6 +6,11 @@ from pathlib import Path
 import sys
 from werkzeug.datastructures import Authorization
 from flask.wrappers import Response
+import configparser
+
+configs = configparser.ConfigParser()
+configs.read("./config.ini")
+hostname = configs["server.broker"]["host"]
 
 class HostTasksManager:
     '''
@@ -120,4 +125,4 @@ def _task_not_registered_response():
     )
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host=hostname, debug=True)

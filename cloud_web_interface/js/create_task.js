@@ -23,7 +23,7 @@ async function submitForm(event) {
         return;
     }
 
-    fetch("http://localhost:9001/rpc_exec_create_task", {
+    fetch("http://192.168.1.170:9001/rpc_exec_create_task", {
         method: "POST",
         mode: "cors",
         headers: {
