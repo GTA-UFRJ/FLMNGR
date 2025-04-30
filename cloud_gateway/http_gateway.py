@@ -57,4 +57,4 @@ def _build_cors_preflight_response():
     return response
 
 if __name__ == "__main__":
-    app.run(port=int(configs["server.gateway"]["port"]), debug=True)
+    app.run(host=configs["server.broker"]["host"], port=int(configs["server.gateway"]["port"]), debug=True)

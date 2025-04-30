@@ -6,7 +6,7 @@ function submitForm(event) {
         arguments: document.getElementById("arguments").value
     };
 
-    fetch("http://localhost:9001/rpc_exec_start_server_task", {
+    fetch("http://192.168.1.170:9001/rpc_exec_start_server_task", {
         method: "POST",
         mode: "cors",
         headers: {

@@ -5,7 +5,7 @@ async function submitForm(event) {
         task_id: document.getElementById("task_id").value
     };
 
-    fetch("http://localhost:9001/rpc_exec_get_task_by_id", {
+    fetch("http://192.168.1.170:9001/rpc_exec_get_task_by_id", {
         method: "POST",
         mode: "cors",
         headers: {
