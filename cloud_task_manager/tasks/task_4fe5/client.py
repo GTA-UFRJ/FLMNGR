@@ -7,6 +7,7 @@ if sys.argv[1] != "cli":
 
 from flwr.client import NumPyClient, start_client
 from task import DEVICE, Net, get_weights, load_data, set_weights, test, train
+from led_interface import LedInterface 
 from task_daemon_lib.task_reporter import TaskReporter
 from microservice_interconnect.rpc_client import register_event
 import configparser
@@ -27,6 +28,9 @@ class FlowerClient(NumPyClient):
 if __name__ == "__main__":
 
     try:
+        led = LedInterface(led_pin=12)
+        led.slow_blink()
+
         configs = configparser.ConfigParser()
         configs.read("config.ini")
 
@@ -48,16 +52,19 @@ if __name__ == "__main__":
                 raise Exception
 
         print("start")
+        led.turn_on()
         start_client(
-            server_address="127.0.0.1:8080",
+                server_address="192.168.1.170:8080",
             client=FlowerClient().to_client(),
         )    
         
+        led.turn_off()
         if sys.argv[1] != "cli":
             register_event("task_client","main","Finished client",allow_registering=allow_register,host=host,port=port)
             task_reporter.send_info("Finished")
     
     except Exception as e:
+        led.quick_blink()
         print(f"Error! {e}")
         if sys.argv[1] == "cli":
             raise e

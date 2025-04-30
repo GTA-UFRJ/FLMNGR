@@ -87,7 +87,7 @@ if __name__ == "__main__":
         config = ServerConfig(num_rounds=1)
 
         start_server(
-            server_address="0.0.0.0:8080",
+            server_address="192.168.1.170:8080",
             config=config,
             strategy=get_strategy(),
         )
