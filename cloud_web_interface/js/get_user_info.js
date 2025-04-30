@@ -13,14 +13,14 @@ async function loadConfig() {
 
 loadConfig();
 
-async function submitForm(event) {
+function submitForm(event) {
     event.preventDefault();
     
     const formData = {
-        task_id: document.getElementById("task_id").value
+        user_id: document.getElementById("user_id").value
     };
 
-    fetch(`http://${host}/rpc_exec_get_task_by_id`, {
+    fetch(`http://${host}/rpc_exec_get_user_info`, {
         method: "POST",
         mode: "cors",
         headers: {
@@ -37,7 +37,7 @@ async function handleResponse(response) {
     const data = await response.json()
     if (response.ok) return data;
     else if (response.status == 400) throw new Error("Invalid request (fatal)");
-    else if(data.includes("not registered")) throw new Error(`This task is not registered`);
+    else if(data.includes("not registered")) throw new Error(`This user is not registered`);
     else { 
         console.error(data)
         throw new Error("Error " + response.status);
@@ -52,11 +52,11 @@ function generateResultPage(data) {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Task Details</title>
+            <title>User Details</title>
             <link rel="stylesheet" href="../css/style.css">
         </head>
         <body>
-            <h1 style="text-align: center;">Task Details</h1>
+            <h1 style="text-align: center;">User Details</h1>
             <div class="center-container">
             <table>
                 <tr><th>Campo</th><th>Valor</th></tr>`;

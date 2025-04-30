@@ -4,108 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get User by ID</title>
-    <style>
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            max-width: 600px;
-        }
-        .form-grid label {
-            display: flex;
-            flex-direction: column;
-        }
-        .form-grid button {
-            grid-column: span 1;
-            margin-top: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-    </style>
-    <script>
-        function submitForm(event) {
-            event.preventDefault();
-            
-            const formData = {
-                user_id: document.getElementById("user_id").value
-            };
-
-            fetch("http://localhost:9001/rpc_exec_get_user_info", {
-                method: "POST",
-                mode: "cors",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => generateResultPage(data))
-            .catch(error => alert("Error: " + error));
-        }
-
-        function generateResultPage(data) {
-            let newWindow = window.open("", "_blank");
-            let html = `
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>User Details</title>
-                    <style>
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-top: 20px;
-                        }
-                        table, th, td {
-                            border: 1px solid black;
-                        }
-                        th, td {
-                            padding: 8px;
-                            text-align: left;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>User Details</h1>
-                    <table>
-                        <tr><th>Campo</th><th>Valor</th></tr>`;
-            
-            for (let key in data) {
-                let value = Array.isArray(data[key]) ? data[key].join(", ") : data[key];
-                html += `<tr><td>${key}</td><td>${value}</td></tr>`;
-            }
-            
-            html += `</table>
-                </body>
-                </html>`;
-            
-            newWindow.document.write(html);
-            newWindow.document.close();
-        }
-    </script>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/get_user_info.js" defer></script>
 </head>
 <body>
-    <h1>Get User by ID</h1>
-    <form onsubmit="submitForm(event)" class="form-grid">
-        <label>User ID: <input type="text" id="user_id" required></label><br>
-        <button type="submit">Get User</button>
-    </form>
+    <h1 style="text-align: center;">Get User by ID</h1>
+    <div class="center-container">
+        <form onsubmit="submitForm(event)" class="form">
+            <label>User ID: <input type="text" id="user_id" required></label>
+            <button type="submit" class="center-button">Get User</button>
+        </form>
+    </div>
 </body>
 </html>

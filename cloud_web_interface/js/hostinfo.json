@@ -1,0 +1,4 @@
+{
+    "host": "localhost:9001",
+    "upload_host": "localhost:5000"
+}

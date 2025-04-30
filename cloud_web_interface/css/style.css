@@ -12,6 +12,7 @@
 }
 .form-grid button:hover {
     background-color: #45a049;
+    cursor: pointer;
 }
 
 
@@ -26,6 +27,7 @@
 }
 .form button:hover {
     background-color: #45a049;
+    cursor: pointer;
 }
 
 
@@ -41,21 +43,24 @@
     display: block;
     margin: 20px auto;
     padding: 10px 20px;
-    min-width: 120px;  /* You can adjust this to your liking */
-    width: auto;  /* Adjust width automatically based on content */
+    min-width: 120px;  
+    width: auto; 
+}
+.center-button:hover {
+    background-color: #45a049;
+    cursor: pointer;
 }
 
 table {
-    width: 70%;
+    width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    margin: 20px auto;
 }
 table, th, td {
     border: 1px solid black;
 }
 th, td {
-    padding: 8px;
+    padding: 10px;
     text-align: center;
 }
 th {

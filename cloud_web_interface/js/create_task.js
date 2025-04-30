@@ -1,3 +1,18 @@
+let host;
+
+// Load config first
+async function loadConfig() {
+    try {
+        const response = await fetch('../js/hostinfo.json');
+        const config = await response.json();
+        host = config.host;
+    } catch (error) {
+        console.error('Error loading hostinfo:', error);
+    }
+}
+
+loadConfig();
+
 async function submitForm(event) {
     event.preventDefault();
 
@@ -23,7 +38,7 @@ async function submitForm(event) {
         return;
     }
 
-    fetch("http://192.168.1.170:9001/rpc_exec_create_task", {
+    fetch(`http://${host}/rpc_exec_create_task`, {
         method: "POST",
         mode: "cors",
         headers: {

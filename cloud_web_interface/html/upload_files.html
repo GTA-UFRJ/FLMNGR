@@ -4,41 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Files</title>
-    <script>
-        function submitForm(event) {
-            event.preventDefault();
-            
-            const taskId = document.getElementById("task_id").value;
-            const files = document.getElementById("file_input").files;
-            
-            if (!taskId) {
-                alert("Task ID is required");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append("task_id", taskId);
-            for (const file of files) {
-                formData.append("files", file);
-            }
-
-            fetch("http://localhost:5000/upload_files", {
-                method: "POST",
-		mode: "cors",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => alert("Files Uploaded: " + JSON.stringify(data)))
-            .catch(error => alert("Error: " + error));
-        }
-    </script>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/upload_files.js" defer></script>
 </head>
 <body>
-    <h1>Upload Files</h1>
-    <form onsubmit="submitForm(event)" enctype="multipart/form-data">
-        <label>Task ID: <input type="text" id="task_id" required></label><br>
-        <label>Select Files: <input type="file" id="file_input" multiple required></label><br>
-        <button type="submit">Upload</button>
-    </form>
+    <h1 style="text-align: center;">Upload Files</h1>
+    <div class="center-container">
+        <form onsubmit="submitForm(event)" class="form" enctype="multipart/form-data">
+            <label>Task ID: <input type="text" id="task_id" required></label>
+            <label>Select Files: </label>
+            <input type="file" id="file_input" multiple required>
+            <button type="submit" class="center-button">Upload</button>
+        </form>
+    </div>
 </body>
 </html>

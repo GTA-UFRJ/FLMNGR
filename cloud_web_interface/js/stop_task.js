@@ -17,11 +17,10 @@ function submitForm(event) {
     event.preventDefault();
     
     const formData = {
-        task_id: document.getElementById("task_id").value,
-        arguments: document.getElementById("arguments").value
+        task_id: document.getElementById("task_id").value
     };
 
-    fetch(`http://${host}/rpc_exec_start_server_task`, {
+    fetch(`http://${host}/rpc_exec_stop_server_task`, {
         method: "POST",
         mode: "cors",
         headers: {
@@ -35,7 +34,7 @@ function submitForm(event) {
     .then(({ response, data }) => {
         switch(response.status) {
             case 200:
-            alert("Task started at the server");
+            alert("Task stopped at the server");
             window.location.href = "../index.html";
             break;
 
@@ -44,7 +43,7 @@ function submitForm(event) {
             throw new Error("Invalid request (fatal)");
 
             case 500:
-            ret = handleStartTaskError(data);
+            ret = handleStopTaskError(data);
             throw new Error(ret);
 
             default:
@@ -55,15 +54,15 @@ function submitForm(event) {
     .catch(error => alert(error));
 }
 
-function handleStartTaskError(error_msg) {
+function handleStopTaskError(error_msg) {
     var possible_error_messages = [
-        "does not exist.",
-        "alredy exists",
+        "not found",
+        "alredy stopped",
         "not registered"
     ]
     var user_error_msgs = [
-        "Task files not found. Upload them before starting",
-        "Task alredy started",
+        "Task not started",
+        "Task alredy stopped",
         "Task not registered"
     ] 
     for (let i=0; i<possible_error_messages.length; i++) {
